@@ -45,6 +45,7 @@ export default function SetupForm() {
   const [company, setCompany] = useState('');
   const [proposal, setProposal] = useState('');
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
+  const [document, setDocument] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -74,6 +75,7 @@ export default function SetupForm() {
         company_name: company,
         proposal_details: proposal,
         concerns: selectedConcerns,
+        document: document || undefined,
       });
       navigate(`/simulation/${result.simulation_id}`);
     } catch (err) {
@@ -158,6 +160,62 @@ export default function SetupForm() {
             rows={5}
             className="w-full px-4 py-3 rounded-lg bg-chamber-surface border border-chamber-border text-chamber-text placeholder:text-chamber-muted/50 focus:outline-none focus:border-accent-blue transition-colors resize-none"
           />
+        </div>
+
+        {/* Document Upload */}
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Proposal Document <span className="text-chamber-muted font-normal">(optional PDF)</span>
+          </label>
+          <div
+            className={`relative rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+              document
+                ? 'border-accent-blue bg-accent-blue/5'
+                : 'border-chamber-border hover:border-chamber-muted'
+            }`}
+            onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-accent-blue'); }}
+            onDragLeave={e => { e.currentTarget.classList.remove('border-accent-blue'); }}
+            onDrop={e => {
+              e.preventDefault();
+              e.currentTarget.classList.remove('border-accent-blue');
+              const file = e.dataTransfer.files[0];
+              if (file && file.type === 'application/pdf') setDocument(file);
+            }}
+          >
+            {document ? (
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-sm text-accent-blue font-medium">{document.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setDocument(null)}
+                  className="text-xs text-chamber-muted hover:text-accent-red transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-chamber-muted mb-1">
+                  Drag & drop a PDF here, or{' '}
+                  <label className="text-accent-blue cursor-pointer hover:underline">
+                    browse
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) setDocument(file);
+                      }}
+                    />
+                  </label>
+                </p>
+                <p className="text-xs text-chamber-muted/60">
+                  The AI will extract and analyze proposal details from your document
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Concerns */}

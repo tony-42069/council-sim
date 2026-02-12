@@ -12,6 +12,7 @@ export async function createSimulation(data: {
   company_name: string;
   proposal_details: string;
   concerns: string[];
+  document?: File;
 }): Promise<CreateSimulationResponse> {
   const formData = new FormData();
   formData.append('city_name', data.city_name);
@@ -19,6 +20,10 @@ export async function createSimulation(data: {
   formData.append('company_name', data.company_name);
   formData.append('proposal_details', data.proposal_details);
   formData.append('concerns', data.concerns.join(','));
+
+  if (data.document) {
+    formData.append('document', data.document);
+  }
 
   const response = await fetch(`${API_BASE}/api/simulations`, {
     method: 'POST',

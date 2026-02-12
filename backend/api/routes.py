@@ -4,11 +4,25 @@ POST /api/simulations — Create and start a new simulation
 GET /api/simulations/{id} — Get simulation state
 """
 
+import io
+
 from fastapi import APIRouter, HTTPException, Form, UploadFile, File
 from typing import Optional
 
 from backend.models.simulation import SimulationInput
 from backend.services.simulation_manager import get_simulation_manager
+
+
+def _extract_pdf_text(content: bytes) -> str | None:
+    """Extract text from PDF bytes using pdfplumber."""
+    try:
+        import pdfplumber
+        with pdfplumber.open(io.BytesIO(content)) as pdf:
+            pages = [page.extract_text() or "" for page in pdf.pages]
+            text = "\n\n".join(pages).strip()
+            return text if text else None
+    except Exception:
+        return None
 
 router = APIRouter(prefix="/api", tags=["simulations"])
 
@@ -36,7 +50,10 @@ async def create_simulation(
     if document and document.filename:
         try:
             content = await document.read()
-            document_text = content.decode("utf-8", errors="replace")
+            if document.filename.lower().endswith(".pdf"):
+                document_text = _extract_pdf_text(content)
+            else:
+                document_text = content.decode("utf-8", errors="replace")
         except Exception:
             pass  # Document extraction is best-effort
 
