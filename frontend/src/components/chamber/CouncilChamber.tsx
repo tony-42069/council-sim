@@ -6,9 +6,14 @@ import SpeakerPanel from './SpeakerPanel';
 import ResultsDashboard from '../results/ResultsDashboard';
 
 export default function CouncilChamber() {
-  const { simulationId } = useParams<{ simulationId: string }>();
+  const { simulationId } = useParams();
   const navigate = useNavigate();
   const state = useSimulation(simulationId);
+
+  if (!simulationId) {
+    navigate('/');
+    return null;
+  }
 
   // Show results view when analysis is ready
   if (state.simulationStatus === 'complete' && state.analysis) {

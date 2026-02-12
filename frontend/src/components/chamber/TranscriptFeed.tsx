@@ -23,7 +23,6 @@ function getPersonaColor(personaId: string, personas: Persona[]): string {
 
 export default function TranscriptFeed({ messages, personas, statusMessage }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom on new content
   useEffect(() => {
@@ -49,11 +48,8 @@ export default function TranscriptFeed({ messages, personas, statusMessage }: Pr
   let lastPhase = '';
 
   return (
-    <div
-      ref={containerRef}
-      className="bg-chamber-surface rounded-xl border border-chamber-border overflow-hidden"
-    >
-      <div className="p-4 space-y-4 max-h-[600px] overflow-y-auto">
+    <div className="bg-chamber-surface rounded-xl border border-chamber-border overflow-hidden">
+      <div className="p-3 sm:p-4 space-y-4 max-h-[60vh] overflow-y-auto">
         {messages.map(msg => {
           const showPhaseDivider = msg.phase !== lastPhase;
           lastPhase = msg.phase;

@@ -114,7 +114,7 @@ export default function SetupForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* City + State */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="col-span-2">
             <label className="block text-sm font-medium mb-2">City / Town *</label>
             <input
@@ -221,7 +221,7 @@ export default function SetupForm() {
         {/* Concerns */}
         <div>
           <label className="block text-sm font-medium mb-3">Community Concerns</label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {CONCERN_OPTIONS.map(concern => (
               <button
                 key={concern.id}

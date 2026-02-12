@@ -67,12 +67,12 @@ async def create_simulation(
     )
 
     manager = get_simulation_manager()
-    state = manager.create_simulation(sim_input)
+    sim_state = manager.create_simulation(sim_input)
 
     return {
-        "simulation_id": state.id,
-        "status": state.status.value,
-        "ws_url": f"/ws/simulation/{state.id}",
+        "simulation_id": sim_state.id,
+        "status": sim_state.status.value,
+        "ws_url": f"/ws/simulation/{sim_state.id}",
     }
 
 
@@ -80,18 +80,18 @@ async def create_simulation(
 async def get_simulation(simulation_id: str):
     """Get the current state of a simulation."""
     manager = get_simulation_manager()
-    state = manager.get_simulation(simulation_id)
+    sim_state = manager.get_simulation(simulation_id)
 
-    if not state:
+    if not sim_state:
         raise HTTPException(status_code=404, detail="Simulation not found")
 
     return {
-        "id": state.id,
-        "status": state.status.value,
-        "city": state.input.city_name,
-        "company": state.input.company_name,
-        "personas": state.personas,
-        "transcript": state.transcript,
-        "analysis": state.analysis,
-        "error": state.error,
+        "id": sim_state.id,
+        "status": sim_state.status.value,
+        "city": sim_state.input.city_name,
+        "company": sim_state.input.company_name,
+        "personas": sim_state.personas,
+        "transcript": sim_state.transcript,
+        "analysis": sim_state.analysis,
+        "error": sim_state.error,
     }

@@ -101,7 +101,7 @@ export default function SpeakerPanel({ personas, currentSpeakerId }: Props) {
 
               {/* Show details when speaking */}
               {isSpeaking && persona.primary_concern && (
-                <p className="text-xs text-chamber-muted mt-2 pl-13">
+                <p className="text-xs text-chamber-muted mt-2 pl-[3.25rem]">
                   Concern: {persona.primary_concern}
                 </p>
               )}
