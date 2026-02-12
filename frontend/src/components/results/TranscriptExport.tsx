@@ -82,8 +82,11 @@ export default function TranscriptExport({ messages, personas, analysis }: Props
   return (
     <button
       onClick={handleExport}
-      className="px-6 py-3 rounded-lg border border-chamber-border text-chamber-text font-medium hover:bg-chamber-surface transition-colors"
+      className="px-8 py-3.5 rounded-xl border border-chamber-border text-chamber-text font-semibold hover:bg-chamber-surface-2 hover:border-chamber-border-light transition-all flex items-center gap-2"
     >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M2 10v3h12v-3M8 2v8M5 7l3 3 3-3" />
+      </svg>
       Export Transcript
     </button>
   );
