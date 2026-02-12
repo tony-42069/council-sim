@@ -1,4 +1,7 @@
+import { motion } from 'framer-motion';
 import type { AnalysisResult, TranscriptMessage, Persona } from '../../types';
+import ApprovalMeter from './ApprovalMeter';
+import TranscriptExport from './TranscriptExport';
 
 interface Props {
   analysis: AnalysisResult;
@@ -7,37 +10,37 @@ interface Props {
   onNewSimulation: () => void;
 }
 
-export default function ResultsDashboard({ analysis, messages, personas, onNewSimulation }: Props) {
-  const scoreColor =
-    analysis.approval_score >= 71 ? 'text-accent-green' :
-    analysis.approval_score >= 51 ? 'text-accent-amber' :
-    analysis.approval_score >= 31 ? 'text-accent-amber' :
-    'text-accent-red';
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+};
 
+export default function ResultsDashboard({ analysis, messages, personas, onNewSimulation }: Props) {
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
+      <motion.div className="text-center mb-8" {...fadeIn} transition={{ delay: 0 }}>
         <h2 className="text-3xl font-bold mb-2">Simulation Results</h2>
-        <p className="text-chamber-muted">Post-debate analysis and recommendations</p>
-      </div>
+        <p className="text-chamber-muted">Post-debate analysis and strategic recommendations</p>
+      </motion.div>
 
-      {/* Approval Score */}
-      <div className="bg-chamber-surface rounded-xl border border-chamber-border p-8 mb-6 text-center">
-        <p className="text-sm text-chamber-muted uppercase tracking-wide mb-2">Approval Score</p>
-        <p className={`text-6xl font-bold ${scoreColor}`}>
-          {Math.round(analysis.approval_score)}
-        </p>
-        <p className={`text-lg font-semibold mt-1 ${scoreColor}`}>{analysis.approval_label}</p>
-        <p className="text-sm text-chamber-muted mt-3 max-w-lg mx-auto">
-          {analysis.approval_reasoning}
-        </p>
-      </div>
+      {/* Animated Approval Meter */}
+      <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+        <ApprovalMeter
+          score={analysis.approval_score}
+          label={analysis.approval_label}
+          reasoning={analysis.approval_reasoning}
+        />
+      </motion.div>
 
       {/* Key Arguments */}
       {analysis.key_arguments.length > 0 && (
-        <div className="bg-chamber-surface rounded-xl border border-chamber-border p-6 mb-6">
+        <motion.div
+          className="bg-chamber-surface rounded-xl border border-chamber-border p-6 mt-6"
+          {...fadeIn}
+          transition={{ delay: 0.3 }}
+        >
           <h3 className="text-lg font-semibold mb-4">Key Arguments</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Opposition */}
             <div>
               <h4 className="text-sm font-semibold text-accent-red mb-3 uppercase tracking-wide">
@@ -90,19 +93,29 @@ export default function ResultsDashboard({ analysis, messages, personas, onNewSi
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Recommended Rebuttals */}
       {analysis.recommended_rebuttals.length > 0 && (
-        <div className="bg-chamber-surface rounded-xl border border-chamber-border p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">Recommended Rebuttals</h3>
+        <motion.div
+          className="bg-chamber-surface rounded-xl border border-chamber-border p-6 mt-6"
+          {...fadeIn}
+          transition={{ delay: 0.5 }}
+        >
+          <h3 className="text-lg font-semibold mb-2">Recommended Rebuttals</h3>
           <p className="text-sm text-chamber-muted mb-4">
             Use these responses in your real city council meeting
           </p>
           <div className="space-y-4">
             {analysis.recommended_rebuttals.map((reb, i) => (
-              <div key={i} className="p-4 rounded-lg bg-chamber-bg border border-chamber-border">
+              <motion.div
+                key={i}
+                className="p-4 rounded-lg bg-chamber-bg border border-chamber-border"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 + i * 0.1 }}
+              >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <p className="text-sm font-semibold text-accent-red">{reb.concern}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
@@ -117,14 +130,18 @@ export default function ResultsDashboard({ analysis, messages, personas, onNewSi
                     Data: {reb.supporting_data}
                   </p>
                 )}
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Overall Assessment */}
-      <div className="bg-chamber-surface rounded-xl border border-chamber-border p-6 mb-6">
+      <motion.div
+        className="bg-chamber-surface rounded-xl border border-chamber-border p-6 mt-6"
+        {...fadeIn}
+        transition={{ delay: 0.7 }}
+      >
         <h3 className="text-lg font-semibold mb-3">Strategic Assessment</h3>
         <p className="text-sm text-chamber-text leading-relaxed">{analysis.overall_assessment}</p>
 
@@ -138,17 +155,26 @@ export default function ResultsDashboard({ analysis, messages, personas, onNewSi
             <p className="text-sm text-chamber-text">{analysis.weakest_opposition_point}</p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Actions */}
-      <div className="flex justify-center gap-4">
+      <motion.div
+        className="flex justify-center gap-4 mt-8"
+        {...fadeIn}
+        transition={{ delay: 0.9 }}
+      >
         <button
           onClick={onNewSimulation}
           className="px-6 py-3 rounded-lg bg-accent-blue text-white font-medium hover:bg-accent-blue/90 transition-colors"
         >
           Run Another Simulation
         </button>
-      </div>
+        <TranscriptExport
+          messages={messages}
+          personas={personas}
+          analysis={analysis}
+        />
+      </motion.div>
     </div>
   );
 }
