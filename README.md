@@ -198,8 +198,8 @@ The frontend runs at `http://localhost:5173`.
 
 ## License
 
-MIT License — Copyright 2026 Sadellari Enterprises
+MIT License
 
 ---
 
-Built with Claude Opus 4.6 and the Claude Agent SDK by [Sadellari Enterprises](https://github.com/tony-42069).
+Built with Claude Opus 4.6 and the Claude Agent SDK.
