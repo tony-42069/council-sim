@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/* Council Simulator - Custom Theme */
+@theme {
+  --color-chamber-bg: #0f1729;
+  --color-chamber-surface: #1a2332;
+  --color-chamber-border: #2a3a4e;
+  --color-chamber-text: #e2e8f0;
+  --color-chamber-muted: #94a3b8;
+
+  --color-accent-blue: #3b82f6;
+  --color-accent-green: #22c55e;
+  --color-accent-red: #ef4444;
+  --color-accent-amber: #f59e0b;
+  --color-accent-purple: #a855f7;
+
+  --color-persona-moderator: #6366f1;
+  --color-persona-petitioner: #22c55e;
+  --color-persona-resident-1: #ef4444;
+  --color-persona-resident-2: #f59e0b;
+  --color-persona-resident-3: #a855f7;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-chamber-bg);
+  color: var(--color-chamber-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
