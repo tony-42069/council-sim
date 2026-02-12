@@ -1,9 +1,17 @@
-import os
+"""
+Council Simulator — FastAPI application entry point.
+
+Run from project root:
+    uvicorn backend.main:app --reload
+"""
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from config import get_settings
+from backend.config import get_settings
+from backend.api.routes import router as api_router
+from backend.api.websocket import router as ws_router
 
 load_dotenv()
 
@@ -27,6 +35,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(api_router)
+app.include_router(ws_router)
 
 
 @app.get("/api/health")

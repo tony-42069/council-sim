@@ -38,6 +38,23 @@ AI-powered city council meeting simulator for data center proposal debates. Buil
 - `PHASES_AND_TASKS.md` — Detailed phase/task breakdown with commit messages
 - `ANTHROPIC_DATA_CENTER_ANNOUNCEMENT.md` — Real-world data to integrate into petitioner agent
 
+## Agent SDK API (Verified Feb 12, 2026)
+Package: `claude-agent-sdk` v0.1.35 (`pip install claude-agent-sdk`)
+
+Key imports:
+```python
+from claude_agent_sdk import query, ClaudeAgentOptions, AgentDefinition
+from claude_agent_sdk import tool, create_sdk_mcp_server, SdkMcpTool
+from claude_agent_sdk import AssistantMessage, ResultMessage, TextBlock
+```
+
+- `query(prompt, options)` — async iterator, yields messages as agent works
+- `ClaudeAgentOptions` — key fields: model, allowed_tools, system_prompt, mcp_servers, permission_mode, max_turns, max_budget_usd, agents (dict[str, AgentDefinition]), output_format
+- `AgentDefinition(description, prompt, tools, model)` — defines subagents
+- `@tool(name, description, input_schema)` — decorator for custom MCP tools
+- `create_sdk_mcp_server(name, version, tools)` — creates MCP server config
+- Permission modes: "default", "acceptEdits", "plan", "bypassPermissions"
+
 ## What NOT To Do
 - Do NOT add user authentication or accounts
 - Do NOT add database persistence (in-memory is fine for demo)
