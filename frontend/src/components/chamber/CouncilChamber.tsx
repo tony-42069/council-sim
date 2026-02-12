@@ -42,7 +42,7 @@ export default function CouncilChamber() {
             <path d="M8 5v4M8 11h.01" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold mb-2">Simulation Error</h2>
+        <h2 className="text-2xl font-bold mb-2 font-display">Simulation Error</h2>
         <p className="text-chamber-muted mb-8 max-w-md mx-auto">{state.error || 'An unexpected error occurred'}</p>
         <button
           onClick={() => navigate('/')}

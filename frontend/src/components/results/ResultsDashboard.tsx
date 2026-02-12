@@ -26,7 +26,7 @@ export default function ResultsDashboard({ analysis, messages, personas, onNewSi
           </svg>
           Simulation Complete
         </div>
-        <h2 className="text-3xl sm:text-4xl font-extrabold mb-3">
+        <h2 className="text-4xl sm:text-5xl font-normal mb-3 font-display">
           <span className="text-gradient">Analysis</span> & Strategy
         </h2>
         <p className="text-chamber-muted text-base max-w-lg mx-auto">
@@ -56,7 +56,7 @@ export default function ResultsDashboard({ analysis, messages, personas, onNewSi
                 <path d="M8 1v14M1 8h14" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold">Key Arguments</h3>
+            <h3 className="text-xl font-normal font-display">Key Arguments</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -136,7 +136,7 @@ export default function ResultsDashboard({ analysis, messages, personas, onNewSi
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-bold">Recommended Rebuttals</h3>
+              <h3 className="text-xl font-normal font-display">Recommended Rebuttals</h3>
               <p className="text-xs text-chamber-muted">Use these responses in your real council meeting</p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function ResultsDashboard({ analysis, messages, personas, onNewSi
               <circle cx="8" cy="8" r="3" />
             </svg>
           </div>
-          <h3 className="text-lg font-bold">Strategic Assessment</h3>
+          <h3 className="text-xl font-normal font-display">Strategic Assessment</h3>
         </div>
         <p className="text-sm text-chamber-text/90 leading-relaxed">{analysis.overall_assessment}</p>
 

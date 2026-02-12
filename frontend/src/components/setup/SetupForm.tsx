@@ -105,7 +105,7 @@ export default function SetupForm() {
           <span className="w-1.5 h-1.5 rounded-full bg-accent-blue animate-pulse" />
           Multi-Agent AI Simulation
         </div>
-        <h2 className="text-4xl sm:text-5xl font-extrabold mb-4 leading-tight">
+        <h2 className="text-5xl sm:text-6xl font-normal mb-4 leading-tight font-display">
           Simulate Your{' '}
           <span className="text-gradient">City Council</span>
           <br />
@@ -159,7 +159,7 @@ export default function SetupForm() {
                 <circle cx="8" cy="6" r="2" />
               </svg>
             </div>
-            <h3 className="text-base font-semibold">Location & Company</h3>
+            <h3 className="text-lg font-normal font-display">Location & Company</h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -217,7 +217,7 @@ export default function SetupForm() {
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-semibold">Proposal Details *</h3>
+              <h3 className="text-lg font-normal font-display">Proposal Details *</h3>
               <p className="text-xs text-chamber-muted">Include size, capacity, jobs, and community benefits</p>
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function SetupForm() {
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-semibold">Proposal Document</h3>
+              <h3 className="text-lg font-normal font-display">Proposal Document</h3>
               <p className="text-xs text-chamber-muted">Optional PDF — AI will extract and analyze key details</p>
             </div>
           </div>
@@ -337,7 +337,7 @@ export default function SetupForm() {
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-semibold">Community Concerns</h3>
+              <h3 className="text-lg font-normal font-display">Community Concerns</h3>
               <p className="text-xs text-chamber-muted">Select topics the AI residents will argue about</p>
             </div>
           </div>

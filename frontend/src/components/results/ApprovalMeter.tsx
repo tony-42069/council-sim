@@ -106,7 +106,7 @@ export default function ApprovalMeter({ score, label, reasoning }: Props) {
       >
         <div className="inline-flex items-center gap-2 mb-4">
           <span className={`w-2 h-2 rounded-full ${colors.bg}`} />
-          <p className={`text-lg font-bold ${colors.text}`}>{label}</p>
+          <p className={`text-xl font-normal font-display ${colors.text}`}>{label}</p>
         </div>
         <p className="text-sm text-chamber-muted leading-relaxed max-w-lg mx-auto">
           {reasoning}
