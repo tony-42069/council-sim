@@ -7,3 +7,4 @@ python-multipart==0.0.12
 python-dotenv==1.0.1
 websockets==13.0
 pdfplumber==0.11.4
+claude-agent-sdk>=0.1.35
