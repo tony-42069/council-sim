@@ -1,0 +1,184 @@
+"""
+WebSocket endpoint for real-time debate streaming.
+Connects client to a simulation and streams debate events.
+"""
+
+import asyncio
+
+import anthropic
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+
+from backend.config import get_settings
+from backend.models.simulation import SimulationStatus
+from backend.models.persona import Persona
+from backend.models.debate import DebatePhase
+from backend.agents.orchestrator import SimulationOrchestrator
+from backend.debate.engine import DebateEngine
+from backend.services.simulation_manager import get_simulation_manager
+from backend.services.stream_manager import get_stream_manager
+
+router = APIRouter()
+
+
+async def run_simulation(simulation_id: str):
+    """
+    Execute the full simulation pipeline as a background task.
+
+    Flow:
+    1. Process uploaded documents (Agent SDK)
+    2. Generate personas (Agent SDK)
+    3. Run the 5-phase debate (Anthropic API streaming)
+    4. Analyze the completed debate (Agent SDK)
+    5. Broadcast results and completion
+    """
+    manager = get_simulation_manager()
+    stream = get_stream_manager()
+    settings = get_settings()
+
+    state = manager.get_simulation(simulation_id)
+    if not state:
+        return
+
+    try:
+        # Create orchestrator for Agent SDK operations
+        orchestrator = SimulationOrchestrator(state.input)
+
+        # --- Phase 0: Document Analysis ---
+        await stream.send_status(simulation_id, "Initializing simulation...")
+
+        if state.input.document_text:
+            await stream.send_status(simulation_id, "Analyzing uploaded document...")
+            doc_data = await orchestrator.process_input(
+                status_callback=lambda msg: stream.send_status(simulation_id, msg),
+            )
+            if doc_data:
+                await stream.send_status(simulation_id, "Document analysis complete")
+
+        # --- Phase 1: Persona Generation ---
+        await manager.update_status(simulation_id, SimulationStatus.GENERATING_PERSONAS)
+        await stream.send_status(simulation_id, "Generating personas...")
+
+        personas = await orchestrator.generate_personas(
+            status_callback=lambda msg: stream.send_status(simulation_id, msg),
+        )
+
+        # Store personas in state
+        persona_dicts = [
+            {
+                "id": p.id,
+                "name": p.name,
+                "role": p.role.value,
+                "archetype": p.archetype.value if p.archetype else None,
+                "age": p.age,
+                "occupation": p.occupation,
+                "background": p.background,
+                "speaking_style": p.speaking_style,
+                "primary_concern": p.primary_concern,
+                "color": p.color,
+            }
+            for p in personas
+        ]
+        await manager.update_personas(simulation_id, persona_dicts)
+
+        # Send persona intros to clients
+        for pd in persona_dicts:
+            await stream.send_persona_intro(simulation_id, pd)
+
+        # --- Phase 2: Run Debate ---
+        client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+
+        # Create callbacks that bridge DebateEngine → StreamManager
+        async def on_phase_change(phase: DebatePhase, description: str):
+            await manager.update_status(simulation_id, SimulationStatus(phase.value))
+            await stream.send_phase_change(simulation_id, phase.value, description)
+
+        async def on_speaking_start(turn_id: str, persona: Persona, phase: DebatePhase):
+            await stream.send_speaking_start(
+                simulation_id, turn_id, persona.id, persona.name, phase.value,
+            )
+
+        async def on_token(turn_id: str, token: str, persona_id: str):
+            await stream.send_token(simulation_id, turn_id, token, persona_id)
+
+        async def on_speaking_end(turn_id: str, persona_id: str, full_text: str):
+            await stream.send_speaking_end(simulation_id, turn_id, persona_id, full_text)
+            # Also store in simulation state
+            await manager.add_transcript_turn(simulation_id, {
+                "turn_id": turn_id,
+                "persona_id": persona_id,
+                "full_text": full_text,
+            })
+
+        engine = DebateEngine(
+            client=client,
+            simulation=state,
+            personas=personas,
+            on_phase_change=on_phase_change,
+            on_speaking_start=on_speaking_start,
+            on_token=on_token,
+            on_speaking_end=on_speaking_end,
+        )
+
+        await engine.run_debate()
+
+        # --- Phase 3: Post-Debate Analysis ---
+        await manager.update_status(simulation_id, SimulationStatus.ANALYSIS)
+        await stream.send_status(simulation_id, "Analyzing debate results...")
+
+        transcript_text = engine.get_transcript().get_full_text()
+
+        analysis_result = await orchestrator.analyze_debate(
+            transcript_text=transcript_text,
+            status_callback=lambda msg: stream.send_status(simulation_id, msg),
+        )
+
+        if analysis_result:
+            analysis_dict = analysis_result.model_dump()
+            await manager.set_analysis(simulation_id, analysis_dict)
+            await stream.send_analysis(simulation_id, analysis_dict)
+
+        # --- Complete ---
+        await manager.update_status(simulation_id, SimulationStatus.COMPLETE)
+        await stream.send_complete(simulation_id)
+
+    except Exception as e:
+        print(f"[ERROR] Simulation {simulation_id} failed: {e}")
+        await manager.set_error(simulation_id, str(e))
+        await stream.send_error(simulation_id, f"Simulation failed: {str(e)}")
+
+
+@router.websocket("/ws/simulation/{simulation_id}")
+async def websocket_endpoint(websocket: WebSocket, simulation_id: str):
+    """
+    WebSocket endpoint for streaming a simulation.
+
+    On first connection, starts the simulation as a background task.
+    Subsequent connections join the existing stream.
+    """
+    manager = get_simulation_manager()
+    stream = get_stream_manager()
+
+    # Verify simulation exists
+    state = manager.get_simulation(simulation_id)
+    if not state:
+        await websocket.close(code=4004, reason="Simulation not found")
+        return
+
+    # Connect client
+    await stream.connect(simulation_id, websocket)
+
+    # Start simulation if not already running
+    existing_task = manager.get_task(simulation_id)
+    if existing_task is None or existing_task.done():
+        task = asyncio.create_task(run_simulation(simulation_id))
+        manager.register_task(simulation_id, task)
+
+    try:
+        # Keep connection alive — listen for client messages (none expected, but keeps WS open)
+        while True:
+            try:
+                await websocket.receive_text()
+            except WebSocketDisconnect:
+                break
+    finally:
+        await stream.disconnect(simulation_id, websocket)
