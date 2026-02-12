@@ -13,12 +13,32 @@ from backend.models.simulation import SimulationInput
 from backend.services.simulation_manager import get_simulation_manager
 
 
-def _extract_pdf_text(content: bytes) -> str | None:
-    """Extract text from PDF bytes using pdfplumber."""
+def _extract_pdf_text(content: bytes, max_pages: int = 30) -> str | None:
+    """Extract text from PDF bytes using pdfplumber.
+
+    For large PDFs, extracts the first chunk of pages plus samples
+    from the middle and end to capture key sections.
+    """
     try:
         import pdfplumber
         with pdfplumber.open(io.BytesIO(content)) as pdf:
-            pages = [page.extract_text() or "" for page in pdf.pages]
+            total = len(pdf.pages)
+            if total <= max_pages:
+                pages = [page.extract_text() or "" for page in pdf.pages]
+            else:
+                # First 15 pages (intro, overview, specs)
+                # Middle 5 pages (details)
+                # Last 5 pages (commitments, conclusions)
+                indices = list(range(15))
+                mid = total // 2
+                indices += list(range(mid - 2, mid + 3))
+                indices += list(range(total - 5, total))
+                indices = sorted(set(i for i in indices if 0 <= i < total))
+                pages = []
+                for i in indices:
+                    text = pdf.pages[i].extract_text() or ""
+                    if text:
+                        pages.append(f"[Page {i+1}/{total}]\n{text}")
             text = "\n\n".join(pages).strip()
             return text if text else None
     except Exception:

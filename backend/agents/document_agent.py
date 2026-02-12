@@ -55,7 +55,7 @@ async def analyze_document_with_sdk(
         return None
 
     prompt = DOCUMENT_ANALYSIS_PROMPT.format(
-        document_text=document_text[:8000]  # Cap input length
+        document_text=document_text[:20000]  # Cap for context window
     )
 
     try:
