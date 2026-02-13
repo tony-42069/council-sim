@@ -135,6 +135,8 @@ export default function CouncilChamber() {
           messages={state.messages}
           personas={state.personas}
           statusMessage={state.statusMessage}
+          agentId={state.agentId}
+          agentStatus={state.agentStatus}
         />
       </div>
     </motion.div>

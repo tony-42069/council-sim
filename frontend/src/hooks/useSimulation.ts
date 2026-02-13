@@ -21,6 +21,8 @@ export interface SimulationState {
   currentSpeaker: { turnId: string; personaId: string; personaName: string } | null;
   analysis: AnalysisResult | null;
   statusMessage: string;
+  agentId: string;
+  agentStatus: string;
   error: string | null;
 }
 
@@ -34,6 +36,8 @@ const initialState: SimulationState = {
   currentSpeaker: null,
   analysis: null,
   statusMessage: 'Connecting...',
+  agentId: '',
+  agentStatus: '',
   error: null,
 };
 
@@ -50,7 +54,7 @@ type Action =
   | { type: 'SPEAKING_END'; turnId: string; personaId: string; fullText: string }
   | { type: 'ANALYSIS'; analysis: AnalysisResult }
   | { type: 'COMPLETE' }
-  | { type: 'STATUS'; message: string }
+  | { type: 'STATUS'; message: string; agentId: string; agentStatus: string }
   | { type: 'ERROR'; message: string };
 
 function reducer(state: SimulationState, action: Action): SimulationState {
@@ -133,7 +137,12 @@ function reducer(state: SimulationState, action: Action): SimulationState {
       };
 
     case 'STATUS':
-      return { ...state, statusMessage: action.message };
+      return {
+        ...state,
+        statusMessage: action.message,
+        agentId: action.agentId || state.agentId,
+        agentStatus: action.agentStatus || state.agentStatus,
+      };
 
     case 'ERROR':
       return {
@@ -267,7 +276,12 @@ export function useSimulation(simulationId: string | undefined) {
           break;
 
         case 'status':
-          dispatch({ type: 'STATUS', message: p.message as string });
+          dispatch({
+            type: 'STATUS',
+            message: p.message as string,
+            agentId: (p.agent_id as string) || '',
+            agentStatus: (p.agent_status as string) || '',
+          });
           break;
 
         case 'error':
