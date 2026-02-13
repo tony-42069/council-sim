@@ -107,59 +107,69 @@ export default function CouncilChamber() {
 
   return (
     <motion.div
+      className="flex flex-col h-[calc(100vh-80px)]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Live Badge + Audio Toggle */}
-      <div className="flex items-center justify-center gap-3 mb-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-red/10 border border-accent-red/20 text-xs font-medium text-accent-red">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-red opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-red" />
-          </span>
-          Live Simulation
+      {/* ===== STICKY TOP SECTION ===== */}
+      <div className="shrink-0">
+        {/* Top bar: Live badge + Audio toggle + Phase */}
+        <div className="flex items-center justify-between mb-3">
+          {/* Left: Live badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-red/10 border border-accent-red/20 text-xs font-medium text-accent-red">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-red opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-red" />
+            </span>
+            Live Simulation
+          </div>
+
+          {/* Right: Audio toggle */}
+          <button
+            onClick={toggleMute}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
+              isMuted
+                ? 'bg-chamber-surface border-chamber-border text-chamber-muted hover:border-accent-blue/30 hover:text-accent-blue'
+                : 'bg-accent-blue/10 border-accent-blue/30 text-accent-blue shadow-sm shadow-accent-blue/10'
+            }`}
+            title={isMuted ? 'Enable voice narration' : 'Mute voice narration'}
+          >
+            {isMuted ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 5L6 9H2v6h4l5 4V5z" />
+                <line x1="23" y1="9" x2="17" y2="15" />
+                <line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 5L6 9H2v6h4l5 4V5z" />
+                <path d="M19.07 4.93a10 10 0 010 14.14" />
+                <path d="M15.54 8.46a5 5 0 010 7.07" />
+              </svg>
+            )}
+            {isMuted ? 'Enable Audio' : 'Audio On'}
+          </button>
         </div>
-        <button
-          onClick={toggleMute}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-            isMuted
-              ? 'bg-chamber-surface border-chamber-border text-chamber-muted hover:border-accent-blue/30'
-              : 'bg-accent-blue/10 border-accent-blue/20 text-accent-blue'
-          }`}
-          title={isMuted ? 'Enable voice narration' : 'Mute voice narration'}
-        >
-          {isMuted ? (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
-            </svg>
-          ) : (
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M11 5L6 9H2v6h4l5 4V5z" />
-              <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" />
-            </svg>
-          )}
-          {isMuted ? 'Audio Off' : 'Audio On'}
-        </button>
+
+        {/* Phase Progress */}
+        <PhaseIndicator
+          currentPhase={state.currentPhase}
+          description={state.phaseDescription}
+        />
+
+        {/* Visual Council Chamber */}
+        <ChamberScene
+          personas={state.personas}
+          currentSpeakerId={state.currentSpeaker?.personaId || null}
+          currentPhase={state.currentPhase}
+        />
       </div>
 
-      {/* Phase Progress */}
-      <PhaseIndicator
-        currentPhase={state.currentPhase}
-        description={state.phaseDescription}
-      />
-
-      {/* Visual Council Chamber */}
-      <ChamberScene
-        personas={state.personas}
-        currentSpeakerId={state.currentSpeaker?.personaId || null}
-        currentPhase={state.currentPhase}
-      />
-
-      {/* Main Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Transcript — left 2/3 */}
-        <div className="lg:col-span-2">
+      {/* ===== SCROLLABLE BOTTOM SECTION ===== */}
+      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Transcript — left 2/3 — independently scrollable */}
+        <div className="lg:col-span-2 min-h-0">
           <TranscriptFeed
             messages={state.messages}
             personas={state.personas}
@@ -168,7 +178,7 @@ export default function CouncilChamber() {
         </div>
 
         {/* Speaker Panel — right 1/3 */}
-        <div>
+        <div className="min-h-0 overflow-y-auto">
           <SpeakerPanel
             personas={state.personas}
             currentSpeakerId={state.currentSpeaker?.personaId || null}
