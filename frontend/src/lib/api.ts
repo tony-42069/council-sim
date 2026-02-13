@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
 
 export interface CreateSimulationResponse {
   simulation_id: string;
@@ -38,6 +38,6 @@ export async function createSimulation(data: {
 }
 
 export function getWebSocketUrl(simulationId: string): string {
-  const wsBase = import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8000';
+  const wsBase = (import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8000').replace(/\/+$/, '');
   return `${wsBase}/ws/simulation/${simulationId}`;
 }
