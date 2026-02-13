@@ -29,7 +29,7 @@ async def _fallback_analysis(
     settings: Settings,
     use_fast_model: bool = False,
 ) -> AnalysisResult | None:
-    """Direct Anthropic API fallback when Agent SDK analysis fails."""
+    """Direct Anthropic API fallback when Agent SDK analysis fails. Always uses Opus."""
     prompt = f"""Analyze this city council debate transcript about a data center proposal.
 
 TRANSCRIPT:
@@ -57,7 +57,7 @@ Return ONLY a JSON object with this exact structure:
 Include 3-5 key arguments from each side and 3-5 rebuttals. Be specific, cite moments from the transcript."""
 
     try:
-        model = settings.fast_model if use_fast_model else settings.analysis_model
+        model = settings.analysis_model
         print(f"[INFO] Fallback analysis using model: {model}")
         response = await client.messages.create(
             model=model,
@@ -225,36 +225,21 @@ async def run_simulation(simulation_id: str):
         transcript_text = engine.get_transcript().get_full_text()
         analysis_result = None
 
-        # Attempt 1: Agent SDK analysis (60s timeout)
+        # Attempt 1: Agent SDK analysis with Opus (90s timeout)
         try:
             analysis_result = await asyncio.wait_for(
                 orchestrator.analyze_debate(
                     transcript_text=transcript_text,
                     status_callback=lambda msg: stream.send_status(simulation_id, msg),
                 ),
-                timeout=60,
+                timeout=90,
             )
         except (asyncio.TimeoutError, Exception) as e:
             print(f"[WARN] Agent SDK analysis failed: {e}")
 
-        # Attempt 2: Direct API fallback with SONNET for speed (45s timeout)
+        # Attempt 2: Direct Opus API fallback (90s timeout)
         if not analysis_result:
-            print("[INFO] Trying fast Sonnet fallback analysis...")
-            await stream.send_status(simulation_id, "Running fast analysis...")
-            try:
-                analysis_result = await asyncio.wait_for(
-                    _fallback_analysis(
-                        client, transcript_text, state.input.proposal_details, settings,
-                        use_fast_model=True,
-                    ),
-                    timeout=45,
-                )
-            except (asyncio.TimeoutError, Exception) as e:
-                print(f"[WARN] Fast fallback analysis failed: {e}")
-
-        # Attempt 3: Direct API with Opus (30s timeout)
-        if not analysis_result:
-            print("[INFO] Trying Opus fallback analysis...")
+            print("[INFO] Trying direct Opus fallback analysis...")
             await stream.send_status(simulation_id, "Finalizing analysis...")
             try:
                 analysis_result = await asyncio.wait_for(
@@ -262,29 +247,10 @@ async def run_simulation(simulation_id: str):
                         client, transcript_text, state.input.proposal_details, settings,
                         use_fast_model=False,
                     ),
-                    timeout=30,
+                    timeout=90,
                 )
             except (asyncio.TimeoutError, Exception) as e:
                 print(f"[WARN] Opus fallback analysis failed: {e}")
-
-        # Last resort: synthetic minimal analysis so results page always shows
-        if not analysis_result:
-            print("[WARN] All analysis methods failed — using synthetic analysis")
-            analysis_result = AnalysisResult(
-                approval_score=45.0,
-                approval_label="Uncertain",
-                approval_reasoning="Analysis could not be completed in time. Based on the debate structure, the outcome appears uncertain with strong arguments on both sides.",
-                key_arguments=[
-                    ArgumentSummary(side="opposition", argument="Residents raised concerns about community impact", strength="moderate", relevant_data="Multiple concerns cited"),
-                    ArgumentSummary(side="petitioner", argument="Economic benefits including jobs and tax revenue", strength="moderate", relevant_data="Standard industry projections"),
-                ],
-                recommended_rebuttals=[
-                    RecommendedRebuttal(concern="Community impact concerns", rebuttal="Address specific concerns with data and binding commitments", supporting_data="Independent studies and community benefit agreements", effectiveness="moderate"),
-                ],
-                strongest_opposition_point="Community concerns about quality of life impacts",
-                weakest_opposition_point="Arguments based on speculation rather than data",
-                overall_assessment="The debate revealed a community with legitimate concerns that can be addressed through specific data, binding commitments, and community benefit agreements. Prepare detailed responses for each concern category before the next hearing.",
-            )
 
         analysis_dict = analysis_result.model_dump()
         await manager.set_analysis(simulation_id, analysis_dict)

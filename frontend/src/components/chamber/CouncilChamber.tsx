@@ -1,8 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useSimulation } from '../../hooks/useSimulation';
-import { useSpeechSynthesis } from '../../hooks/useSpeechSynthesis';
 import PhaseIndicator from './PhaseIndicator';
 import ChamberScene from './ChamberScene';
 import TranscriptFeed from './TranscriptFeed';
@@ -13,26 +11,6 @@ export default function CouncilChamber() {
   const { simulationId } = useParams();
   const navigate = useNavigate();
   const state = useSimulation(simulationId);
-  const { speak, stop, toggleMute, isMuted } = useSpeechSynthesis();
-  const spokenTurnsRef = useRef<Set<string>>(new Set());
-
-  // Speak completed turns
-  useEffect(() => {
-    for (const msg of state.messages) {
-      if (msg.is_complete && !spokenTurnsRef.current.has(msg.turn_id)) {
-        spokenTurnsRef.current.add(msg.turn_id);
-        speak(msg.content, msg.persona_id);
-      }
-    }
-  }, [state.messages, speak]);
-
-  // Stop speech on unmount or completion
-  useEffect(() => {
-    if (state.simulationStatus === 'complete' || state.simulationStatus === 'error') {
-      stop();
-    }
-    return () => stop();
-  }, [state.simulationStatus, stop]);
 
   if (!simulationId) {
     navigate('/');
@@ -114,9 +92,8 @@ export default function CouncilChamber() {
     >
       {/* ===== LEFT: Chamber + Controls ===== */}
       <div className="flex flex-col flex-1 min-w-0 min-h-0">
-        {/* Top bar: Live badge + Audio toggle */}
+        {/* Top bar: Live badge */}
         <div className="flex items-center justify-between mb-3 shrink-0">
-          {/* Left: Live badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-red/10 border border-accent-red/20 text-xs font-medium text-accent-red">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-red opacity-75" />
@@ -124,32 +101,6 @@ export default function CouncilChamber() {
             </span>
             Live Simulation
           </div>
-
-          {/* Right: Audio toggle */}
-          <button
-            onClick={toggleMute}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
-              isMuted
-                ? 'bg-chamber-surface border-chamber-border text-chamber-muted hover:border-accent-blue/30 hover:text-accent-blue'
-                : 'bg-accent-blue/10 border-accent-blue/30 text-accent-blue shadow-sm shadow-accent-blue/10'
-            }`}
-            title={isMuted ? 'Enable voice narration' : 'Mute voice narration'}
-          >
-            {isMuted ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M11 5L6 9H2v6h4l5 4V5z" />
-                <line x1="23" y1="9" x2="17" y2="15" />
-                <line x1="17" y1="9" x2="23" y2="15" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M11 5L6 9H2v6h4l5 4V5z" />
-                <path d="M19.07 4.93a10 10 0 010 14.14" />
-                <path d="M15.54 8.46a5 5 0 010 7.07" />
-              </svg>
-            )}
-            {isMuted ? 'Enable Audio' : 'Audio On'}
-          </button>
         </div>
 
         {/* Phase Progress */}
