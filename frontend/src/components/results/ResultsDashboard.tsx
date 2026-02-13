@@ -20,11 +20,20 @@ export default function ResultsDashboard({ analysis, messages, personas, onNewSi
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <motion.div className="text-center mb-10" {...fadeIn} transition={{ delay: 0 }}>
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/20 text-xs font-medium text-accent-green mb-5">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M2 6l3 3 5-5" />
-          </svg>
-          Simulation Complete
+        <div className="flex items-center justify-center gap-3 mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/20 text-xs font-medium text-accent-green">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M2 6l3 3 5-5" />
+            </svg>
+            Simulation Complete
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-purple/10 border border-accent-purple/20 text-xs font-medium text-accent-purple">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M8 1v4M8 11v4M1 8h4M11 8h4" />
+              <circle cx="8" cy="8" r="2" />
+            </svg>
+            4 AI Agents
+          </div>
         </div>
         <h2 className="text-4xl sm:text-5xl font-normal mb-3 font-display">
           <span className="text-gradient">Analysis</span> & Strategy

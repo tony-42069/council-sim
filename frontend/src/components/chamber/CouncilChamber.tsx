@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useSimulation } from '../../hooks/useSimulation';
 import PhaseIndicator from './PhaseIndicator';
@@ -6,6 +7,21 @@ import ChamberScene from './ChamberScene';
 import TranscriptFeed from './TranscriptFeed';
 import SpeakerPanel from './SpeakerPanel';
 import ResultsDashboard from '../results/ResultsDashboard';
+
+function ElapsedTimer() {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed(e => e + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  return (
+    <span className="text-[11px] font-mono text-chamber-muted/60 tabular-nums">
+      {mins}:{secs.toString().padStart(2, '0')}
+    </span>
+  );
+}
 
 export default function CouncilChamber() {
   const { simulationId } = useParams();
@@ -92,7 +108,7 @@ export default function CouncilChamber() {
     >
       {/* ===== LEFT: Chamber + Controls ===== */}
       <div className="flex flex-col flex-1 min-w-0 min-h-0">
-        {/* Top bar: Live badge */}
+        {/* Top bar: Live badge + Timer */}
         <div className="flex items-center justify-between mb-3 shrink-0">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-red/10 border border-accent-red/20 text-xs font-medium text-accent-red">
             <span className="relative flex h-2 w-2">
@@ -101,6 +117,7 @@ export default function CouncilChamber() {
             </span>
             Live Simulation
           </div>
+          <ElapsedTimer />
         </div>
 
         {/* Phase Progress */}

@@ -14,6 +14,14 @@ const CONCERN_OPTIONS = [
 
 const PRESET_SCENARIOS = [
   {
+    label: 'Van Buren Twp, MI',
+    city: 'Van Buren Township',
+    state: 'MI',
+    company: 'Cannoli Development LLC',
+    proposal: 'Project Cannoli: A 500,000+ sq ft hyperscale data center campus on 130 acres near I-94 and Belleville Road in Van Buren Township, Michigan. The $1B+ facility will include multiple buildings with up to 80MW of power capacity, advanced closed-loop liquid cooling that recycles 95% of water, on-site solar arrays, and a dedicated electrical substation. The project promises 150 permanent jobs, 1,500 construction jobs over 3 years, $8.5M in annual property tax revenue, and a $5M community benefit fund for schools, parks, and infrastructure improvements.',
+    concerns: ['water', 'power', 'noise', 'traffic', 'property', 'environmental'],
+  },
+  {
     label: 'Novi, MI',
     city: 'Novi',
     state: 'MI',
@@ -141,6 +149,45 @@ export default function SetupForm() {
           Upload a proposal PDF and our AI agents handle the rest — or fill in the details manually.
           Watch a live debate, then get approval scoring and actionable rebuttals.
         </p>
+      </motion.div>
+
+      {/* How It Works */}
+      <motion.div
+        className="mb-10 grid grid-cols-1 sm:grid-cols-3 gap-4"
+        {...fadeInUp}
+        transition={{ delay: 0.1 }}
+      >
+        {[
+          {
+            step: '1',
+            title: 'Upload & Configure',
+            desc: 'Drop a proposal PDF or fill in details. AI extracts everything automatically.',
+            color: '#3b82f6',
+          },
+          {
+            step: '2',
+            title: 'Watch the Debate',
+            desc: '5 AI agents debate your proposal in a realistic council meeting simulation.',
+            color: '#a855f7',
+          },
+          {
+            step: '3',
+            title: 'Get Strategy',
+            desc: 'Receive approval scoring, key arguments, and actionable rebuttals for your real meeting.',
+            color: '#22c55e',
+          },
+        ].map(item => (
+          <div key={item.step} className="relative glass-card rounded-xl p-5 group">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white mb-3"
+              style={{ backgroundColor: item.color }}
+            >
+              {item.step}
+            </div>
+            <h4 className="text-sm font-semibold text-chamber-text mb-1">{item.title}</h4>
+            <p className="text-xs text-chamber-muted leading-relaxed">{item.desc}</p>
+          </div>
+        ))}
       </motion.div>
 
       {/* Quick Start Presets */}
