@@ -28,6 +28,34 @@ export default function CouncilChamber() {
     );
   }
 
+  // Simulation complete but no analysis — show transcript with a note
+  if (state.simulationStatus === 'complete' && !state.analysis) {
+    return (
+      <motion.div
+        className="max-w-2xl mx-auto text-center py-20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="w-16 h-16 rounded-2xl bg-accent-amber/10 border border-accent-amber/20 flex items-center justify-center mx-auto mb-5">
+          <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent-amber">
+            <circle cx="8" cy="8" r="6.5" />
+            <path d="M8 5v4M8 11h.01" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold mb-2 font-display">Debate Complete</h2>
+        <p className="text-chamber-muted mb-8 max-w-md mx-auto">
+          The debate finished but the analysis step timed out. The transcript is still available above.
+        </p>
+        <button
+          onClick={() => navigate('/')}
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-accent-blue to-accent-cyan text-white font-medium hover:shadow-lg hover:shadow-accent-blue/20 transition-all"
+        >
+          Run Another Simulation
+        </button>
+      </motion.div>
+    );
+  }
+
   // Error state
   if (state.simulationStatus === 'error') {
     return (

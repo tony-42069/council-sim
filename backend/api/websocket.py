@@ -3,21 +3,97 @@ WebSocket endpoint for real-time debate streaming.
 Connects client to a simulation and streams debate events.
 """
 
+import json
 import asyncio
 
 import anthropic
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from backend.config import get_settings
+from backend.config import get_settings, Settings
 from backend.models.simulation import SimulationStatus
 from backend.models.persona import Persona
 from backend.models.debate import DebatePhase
+from backend.models.analysis import AnalysisResult, ArgumentSummary, RecommendedRebuttal
 from backend.agents.orchestrator import SimulationOrchestrator
 from backend.debate.engine import DebateEngine
 from backend.services.simulation_manager import get_simulation_manager
 from backend.services.stream_manager import get_stream_manager
 
 router = APIRouter()
+
+
+async def _fallback_analysis(
+    client: anthropic.AsyncAnthropic,
+    transcript_text: str,
+    proposal_summary: str,
+    settings: Settings,
+) -> AnalysisResult | None:
+    """Direct Anthropic API fallback when Agent SDK analysis fails."""
+    prompt = f"""Analyze this city council debate transcript about a data center proposal.
+
+TRANSCRIPT:
+{transcript_text[:15000]}
+
+PROPOSAL:
+{proposal_summary[:3000]}
+
+Return ONLY a JSON object with this exact structure:
+{{
+  "approval_score": <number 0-100>,
+  "approval_label": "Likely Denied" | "Uncertain" | "Likely Approved" | "Strong Approval",
+  "approval_reasoning": "2-3 sentences explaining the score",
+  "key_arguments": [
+    {{"side": "opposition" or "petitioner", "argument": "specific argument", "strength": "strong" | "moderate" | "weak", "relevant_data": "data cited"}}
+  ],
+  "recommended_rebuttals": [
+    {{"concern": "specific concern", "rebuttal": "recommended response", "supporting_data": "stats to cite", "effectiveness": "high" | "moderate" | "low"}}
+  ],
+  "strongest_opposition_point": "single strongest resident argument",
+  "weakest_opposition_point": "weakest resident argument",
+  "overall_assessment": "3-4 sentences of strategic advice"
+}}
+
+Include 3-5 key arguments from each side and 3-5 rebuttals. Be specific, cite moments from the transcript."""
+
+    try:
+        response = await client.messages.create(
+            model=settings.analysis_model,
+            max_tokens=3000,
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        text = response.content[0].text
+        start = text.find("{")
+        end = text.rfind("}") + 1
+        if start == -1 or end == 0:
+            return None
+
+        data = json.loads(text[start:end])
+
+        key_arguments = [
+            ArgumentSummary(**arg)
+            for arg in data.get("key_arguments", [])
+            if isinstance(arg, dict)
+        ]
+        rebuttals = [
+            RecommendedRebuttal(**reb)
+            for reb in data.get("recommended_rebuttals", [])
+            if isinstance(reb, dict)
+        ]
+
+        return AnalysisResult(
+            approval_score=float(data.get("approval_score", 50)),
+            approval_label=data.get("approval_label", "Uncertain"),
+            approval_reasoning=data.get("approval_reasoning", ""),
+            key_arguments=key_arguments,
+            recommended_rebuttals=rebuttals,
+            strongest_opposition_point=data.get("strongest_opposition_point", ""),
+            weakest_opposition_point=data.get("weakest_opposition_point", ""),
+            overall_assessment=data.get("overall_assessment", ""),
+        )
+    except Exception as e:
+        print(f"[ERROR] Fallback analysis failed: {e}")
+        return None
 
 
 async def run_simulation(simulation_id: str):
@@ -132,10 +208,20 @@ async def run_simulation(simulation_id: str):
             status_callback=lambda msg: stream.send_status(simulation_id, msg),
         )
 
+        # Fallback: if Agent SDK analysis fails, use direct API
+        if not analysis_result:
+            print("[INFO] Agent SDK analysis failed, trying direct API fallback")
+            await stream.send_status(simulation_id, "Running fallback analysis...")
+            analysis_result = await _fallback_analysis(
+                client, transcript_text, state.input.proposal_details, settings,
+            )
+
         if analysis_result:
             analysis_dict = analysis_result.model_dump()
             await manager.set_analysis(simulation_id, analysis_dict)
             await stream.send_analysis(simulation_id, analysis_dict)
+        else:
+            print(f"[ERROR] All analysis methods failed for {simulation_id}")
 
         # --- Complete ---
         await manager.update_status(simulation_id, SimulationStatus.COMPLETE)
@@ -158,18 +244,23 @@ async def websocket_endpoint(websocket: WebSocket, simulation_id: str):
     manager = get_simulation_manager()
     stream = get_stream_manager()
 
+    print(f"[WS] Connection request for simulation {simulation_id}")
+
     # Verify simulation exists
     state = manager.get_simulation(simulation_id)
     if not state:
+        print(f"[WS] Simulation {simulation_id} not found, rejecting")
         await websocket.close(code=4004, reason="Simulation not found")
         return
 
     # Connect client
     await stream.connect(simulation_id, websocket)
+    print(f"[WS] Client connected to simulation {simulation_id}")
 
     # Start simulation if not already running
     existing_task = manager.get_task(simulation_id)
     if existing_task is None or existing_task.done():
+        print(f"[WS] Starting simulation task for {simulation_id}")
         task = asyncio.create_task(run_simulation(simulation_id))
         manager.register_task(simulation_id, task)
 
@@ -179,6 +270,7 @@ async def websocket_endpoint(websocket: WebSocket, simulation_id: str):
             try:
                 await websocket.receive_text()
             except WebSocketDisconnect:
+                print(f"[WS] Client disconnected from {simulation_id}")
                 break
     finally:
         await stream.disconnect(simulation_id, websocket)

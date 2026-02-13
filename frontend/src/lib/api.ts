@@ -38,6 +38,11 @@ export async function createSimulation(data: {
 }
 
 export function getWebSocketUrl(simulationId: string): string {
-  const wsBase = (import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:8000').replace(/\/+$/, '');
+  // Derive WS URL from API URL if VITE_WS_BASE_URL is not set
+  let wsBase = import.meta.env.VITE_WS_BASE_URL;
+  if (!wsBase) {
+    wsBase = API_BASE.replace(/^http/, 'ws');
+  }
+  wsBase = wsBase.replace(/\/+$/, '');
   return `${wsBase}/ws/simulation/${simulationId}`;
 }
