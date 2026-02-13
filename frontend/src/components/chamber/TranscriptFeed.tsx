@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import type { TranscriptMessage, Persona } from '../../types';
 import AgentOrchestrationPanel from './AgentOrchestrationPanel';
 
