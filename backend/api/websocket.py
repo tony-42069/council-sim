@@ -121,41 +121,56 @@ async def run_simulation(simulation_id: str):
         # Create orchestrator for Agent SDK operations
         orchestrator = SimulationOrchestrator(state.input)
 
+        # Helper to send agent-aware status
+        async def agent_status(msg: str, agent_id: str = "", agent_state: str = ""):
+            payload: dict = {"message": msg}
+            if agent_id:
+                payload["agent_id"] = agent_id
+            if agent_state:
+                payload["agent_status"] = agent_state
+            await stream.broadcast(simulation_id, "status", payload)
+
         # --- Phase 0: Document Analysis ---
-        await stream.send_status(simulation_id, "Initializing simulation...")
+        await agent_status("Initializing AI agents...", "document_analyzer", "idle")
 
         if state.input.document_text:
-            await stream.send_status(simulation_id, "Analyzing uploaded document...")
+            await agent_status("Analyzing uploaded document...", "document_analyzer", "active")
             doc_data = await orchestrator.process_input(
-                status_callback=lambda msg: stream.send_status(simulation_id, msg),
+                status_callback=lambda msg: agent_status(msg, "document_analyzer", "active"),
             )
             if doc_data:
-                await stream.send_status(simulation_id, "Document analysis complete")
+                await agent_status("Document analysis complete — extracted key facts", "document_analyzer", "complete")
+            else:
+                await agent_status("Document processed", "document_analyzer", "complete")
+        else:
+            await agent_status("No document uploaded — skipping", "document_analyzer", "complete")
 
         # --- Phase 1.5: Community Research (time-boxed, non-blocking) ---
-        await stream.send_status(simulation_id, "Researching real community sentiment...")
+        await agent_status("Researching real community sentiment...", "community_research", "active")
         try:
             research = await asyncio.wait_for(
                 orchestrator.research_community(
-                    status_callback=lambda msg: stream.send_status(simulation_id, msg),
+                    status_callback=lambda msg: agent_status(msg, "community_research", "active"),
                 ),
                 timeout=50,  # Hard cap at 50s total for research
             )
             if research:
-                await stream.send_status(
-                    simulation_id,
-                    f"Found {len(research.real_quotes)} real community quotes",
+                await agent_status(
+                    f"Found {len(research.real_quotes)} real community quotes — opposition: {research.opposition_strength}",
+                    "community_research", "complete",
                 )
+            else:
+                await agent_status("Community research complete", "community_research", "complete")
         except (asyncio.TimeoutError, Exception) as e:
             print(f"[WARN] Community research failed/timed out (non-fatal): {e}")
-            await stream.send_status(simulation_id, "Community research skipped — continuing...")
+            await agent_status("Community research timed out — continuing", "community_research", "complete")
 
         # --- Phase 1: Persona Generation ---
         await manager.update_status(simulation_id, SimulationStatus.GENERATING_PERSONAS)
-        await stream.send_status(simulation_id, "Generating personas...")
+        await agent_status("Generating realistic debate personas...", "persona_generator", "active")
 
         personas = await orchestrator.generate_personas(
-            status_callback=lambda msg: stream.send_status(simulation_id, msg),
+            status_callback=lambda msg: agent_status(msg, "persona_generator", "active"),
         )
 
         # Store personas in state
@@ -179,6 +194,8 @@ async def run_simulation(simulation_id: str):
         # Send persona intros to clients
         for pd in persona_dicts:
             await stream.send_persona_intro(simulation_id, pd)
+
+        await agent_status(f"Generated {len(personas)} personas — ready to debate", "persona_generator", "complete")
 
         # --- Phase 2: Run Debate ---
         client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
@@ -219,17 +236,22 @@ async def run_simulation(simulation_id: str):
 
         # --- Phase 3: Post-Debate Analysis ---
         await manager.update_status(simulation_id, SimulationStatus.ANALYSIS)
-        await stream.send_status(simulation_id, "Analyzing debate results...")
+        await agent_status("Debate Analyst is reading the full transcript...", "debate_analyst", "active")
 
         transcript_text = engine.get_transcript().get_full_text()
         analysis_result = None
 
+        # Send progressive analysis status messages
+        async def analysis_progress(msg: str):
+            await agent_status(msg, "debate_analyst", "active")
+
         # Attempt 1: Agent SDK analysis with Opus (90s timeout)
+        await analysis_progress("Evaluating argument quality from both sides...")
         try:
             analysis_result = await asyncio.wait_for(
                 orchestrator.analyze_debate(
                     transcript_text=transcript_text,
-                    status_callback=lambda msg: stream.send_status(simulation_id, msg),
+                    status_callback=lambda msg: analysis_progress(msg),
                 ),
                 timeout=90,
             )
@@ -239,7 +261,7 @@ async def run_simulation(simulation_id: str):
         # Attempt 2: Direct Opus API fallback (90s timeout)
         if not analysis_result:
             print("[INFO] Trying direct Opus fallback analysis...")
-            await stream.send_status(simulation_id, "Finalizing analysis...")
+            await analysis_progress("Computing approval score and generating rebuttals...")
             try:
                 analysis_result = await asyncio.wait_for(
                     _fallback_analysis(
@@ -251,10 +273,12 @@ async def run_simulation(simulation_id: str):
                 print(f"[WARN] Opus fallback analysis failed: {e}")
 
         if analysis_result:
+            await agent_status("Analysis complete — preparing results", "debate_analyst", "complete")
             analysis_dict = analysis_result.model_dump()
             await manager.set_analysis(simulation_id, analysis_dict)
             await stream.send_analysis(simulation_id, analysis_dict)
         else:
+            await agent_status("Analysis could not be completed", "debate_analyst", "complete")
             print("[WARN] All analysis methods failed — no results to show")
 
         # --- Complete ---
