@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { createSimulation, extractDocument } from '../../lib/api';
 
@@ -54,6 +54,7 @@ const fadeInUp = {
 
 export default function SetupForm() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [company, setCompany] = useState('');
@@ -63,6 +64,23 @@ export default function SetupForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [error, setError] = useState('');
+
+  // Pre-fill from query params (from landing page PDF extraction)
+  useEffect(() => {
+    const qCity = searchParams.get('city');
+    const qState = searchParams.get('state');
+    const qCompany = searchParams.get('company');
+    const qProposal = searchParams.get('proposal');
+    const qConcerns = searchParams.get('concerns');
+    if (qCity) setCity(qCity);
+    if (qState) setState(qState);
+    if (qCompany) setCompany(qCompany);
+    if (qProposal) setProposal(qProposal);
+    if (qConcerns) {
+      const valid = qConcerns.split(',').filter(c => CONCERN_OPTIONS.some(opt => opt.id === c));
+      if (valid.length) setSelectedConcerns(valid);
+    }
+  }, [searchParams]);
 
   const toggleConcern = (id: string) => {
     setSelectedConcerns(prev =>

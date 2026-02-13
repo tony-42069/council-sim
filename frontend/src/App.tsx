@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import LandingPage from './components/landing/LandingPage';
 import SetupForm from './components/setup/SetupForm';
 import CouncilChamber from './components/chamber/CouncilChamber';
 import './index.css';
 
 function AppContent() {
   const location = useLocation();
-  const isSimulation = location.pathname.startsWith('/simulation');
+  const isSimulation = location.pathname.startsWith('/simulation') || location.pathname.startsWith('/setup');
 
   return (
     <div className="min-h-screen bg-chamber-bg bg-grid-pattern relative">
@@ -46,7 +47,8 @@ function AppContent() {
       {/* Main Content */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Routes>
-          <Route path="/" element={<SetupForm />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/setup" element={<SetupForm />} />
           <Route path="/simulation/:simulationId" element={<CouncilChamber />} />
         </Routes>
       </main>
