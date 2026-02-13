@@ -31,7 +31,7 @@ function AppContent() {
                 Council Simulator
               </h1>
               <span className="text-[10px] font-medium text-accent-blue/80 uppercase tracking-widest leading-tight hidden sm:block">
-                AI-Powered Debate Engine
+                AI-Powered Debate Simulator
               </span>
             </div>
           </a>
