@@ -27,7 +27,6 @@ async def _fallback_analysis(
     transcript_text: str,
     proposal_summary: str,
     settings: Settings,
-    use_fast_model: bool = False,
 ) -> AnalysisResult | None:
     """Direct Anthropic API fallback when Agent SDK analysis fails. Always uses Opus."""
     prompt = f"""Analyze this city council debate transcript about a data center proposal.
@@ -245,16 +244,18 @@ async def run_simulation(simulation_id: str):
                 analysis_result = await asyncio.wait_for(
                     _fallback_analysis(
                         client, transcript_text, state.input.proposal_details, settings,
-                        use_fast_model=False,
                     ),
                     timeout=90,
                 )
             except (asyncio.TimeoutError, Exception) as e:
                 print(f"[WARN] Opus fallback analysis failed: {e}")
 
-        analysis_dict = analysis_result.model_dump()
-        await manager.set_analysis(simulation_id, analysis_dict)
-        await stream.send_analysis(simulation_id, analysis_dict)
+        if analysis_result:
+            analysis_dict = analysis_result.model_dump()
+            await manager.set_analysis(simulation_id, analysis_dict)
+            await stream.send_analysis(simulation_id, analysis_dict)
+        else:
+            print("[WARN] All analysis methods failed — no results to show")
 
         # --- Complete ---
         await manager.update_status(simulation_id, SimulationStatus.COMPLETE)
