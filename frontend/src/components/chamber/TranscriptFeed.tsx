@@ -135,8 +135,8 @@ export default function TranscriptFeed({ messages, personas, statusMessage }: Pr
     const isGenerating = statusMessage.toLowerCase().includes('persona') || statusMessage.toLowerCase().includes('generating');
 
     return (
-      <div className="glass-card rounded-2xl h-full flex items-center justify-center">
-        <div className="text-center px-8 py-12 w-full max-w-md">
+      <div className="glass-card rounded-2xl h-full flex items-center justify-center min-h-[300px]">
+        <div className="text-center px-6 py-8 w-full max-w-sm">
           {isResearching ? (
             <ResearchAgentAnimation statusMessage={statusMessage} />
           ) : (
@@ -181,7 +181,7 @@ export default function TranscriptFeed({ messages, personas, statusMessage }: Pr
   let lastPhase = '';
 
   return (
-    <div className="glass-card rounded-2xl overflow-hidden flex flex-col h-full">
+    <div className="glass-card rounded-2xl overflow-hidden flex flex-col h-full min-h-[300px]">
       {/* Header */}
       <div className="px-5 py-3 border-b border-chamber-border/50 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">

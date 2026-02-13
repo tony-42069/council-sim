@@ -107,15 +107,15 @@ export default function CouncilChamber() {
 
   return (
     <motion.div
-      className="flex flex-col h-[calc(100vh-80px)]"
+      className="h-[calc(100vh-80px)] flex flex-col lg:flex-row gap-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* ===== STICKY TOP SECTION ===== */}
-      <div className="shrink-0">
-        {/* Top bar: Live badge + Audio toggle + Phase */}
-        <div className="flex items-center justify-between mb-3">
+      {/* ===== LEFT: Chamber + Controls ===== */}
+      <div className="flex flex-col flex-1 min-w-0 min-h-0">
+        {/* Top bar: Live badge + Audio toggle */}
+        <div className="flex items-center justify-between mb-3 shrink-0">
           {/* Left: Live badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-red/10 border border-accent-red/20 text-xs font-medium text-accent-red">
             <span className="relative flex h-2 w-2">
@@ -153,37 +153,38 @@ export default function CouncilChamber() {
         </div>
 
         {/* Phase Progress */}
-        <PhaseIndicator
-          currentPhase={state.currentPhase}
-          description={state.phaseDescription}
-        />
-
-        {/* Visual Council Chamber */}
-        <ChamberScene
-          personas={state.personas}
-          currentSpeakerId={state.currentSpeaker?.personaId || null}
-          currentPhase={state.currentPhase}
-        />
-      </div>
-
-      {/* ===== SCROLLABLE BOTTOM SECTION ===== */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Transcript — left 2/3 — independently scrollable */}
-        <div className="lg:col-span-2 min-h-0">
-          <TranscriptFeed
-            messages={state.messages}
-            personas={state.personas}
-            statusMessage={state.statusMessage}
+        <div className="shrink-0">
+          <PhaseIndicator
+            currentPhase={state.currentPhase}
+            description={state.phaseDescription}
           />
         </div>
 
-        {/* Speaker Panel — right 1/3 */}
-        <div className="min-h-0 overflow-y-auto">
+        {/* Visual Council Chamber */}
+        <div className="shrink-0">
+          <ChamberScene
+            personas={state.personas}
+            currentSpeakerId={state.currentSpeaker?.personaId || null}
+            currentPhase={state.currentPhase}
+          />
+        </div>
+
+        {/* Speaker Panel — fills remaining space below chamber */}
+        <div className="flex-1 min-h-0 overflow-y-auto mt-4">
           <SpeakerPanel
             personas={state.personas}
             currentSpeakerId={state.currentSpeaker?.personaId || null}
           />
         </div>
+      </div>
+
+      {/* ===== RIGHT SIDEBAR: Transcript ===== */}
+      <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 min-h-0 flex flex-col">
+        <TranscriptFeed
+          messages={state.messages}
+          personas={state.personas}
+          statusMessage={state.statusMessage}
+        />
       </div>
     </motion.div>
   );

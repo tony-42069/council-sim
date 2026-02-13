@@ -89,7 +89,7 @@ async def research_community_sentiment(
     proposal_summary: str,
     concerns: list[str],
     mcp_server_config: dict,
-    timeout_seconds: int = 90,
+    timeout_seconds: int = 45,
 ) -> Optional[CommunityResearchResult]:
     """
     Use the Agent SDK to research real community sentiment about a data center proposal.
