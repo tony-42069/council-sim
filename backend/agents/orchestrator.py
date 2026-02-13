@@ -18,6 +18,7 @@ from backend.agents.tools.scoring import compute_approval_score_tool
 from backend.agents.persona_agent import generate_personas_with_sdk
 from backend.agents.document_agent import analyze_document_with_sdk
 from backend.agents.analysis_agent import analyze_debate_with_sdk
+from backend.agents.community_research_agent import research_community_sentiment, CommunityResearchResult
 
 
 class SimulationOrchestrator:
@@ -35,6 +36,7 @@ class SimulationOrchestrator:
     def __init__(self, simulation_input: SimulationInput):
         self.input = simulation_input
         self._mcp_server = self._create_mcp_server()
+        self._community_research: Optional[CommunityResearchResult] = None
 
     def _create_mcp_server(self) -> dict:
         """Create the shared MCP server with all custom tools."""
@@ -70,6 +72,35 @@ class SimulationOrchestrator:
 
         return result
 
+    async def research_community(self, status_callback=None) -> Optional[CommunityResearchResult]:
+        """
+        Phase 1.5: Research real community sentiment about the proposal.
+        Uses WebSearch to find actual news articles, resident quotes, and local context.
+        """
+        if status_callback:
+            await status_callback("Researching real community sentiment...")
+
+        result = await research_community_sentiment(
+            city_name=self.input.city_name,
+            state=self.input.state,
+            proposal_summary=self.input.proposal_details,
+            concerns=self.input.concerns,
+            mcp_server_config=self._mcp_server,
+        )
+
+        if result:
+            self._community_research = result
+            if status_callback:
+                quote_count = len(result.real_quotes)
+                await status_callback(
+                    f"Found {quote_count} real community quotes — opposition: {result.opposition_strength}"
+                )
+        else:
+            if status_callback:
+                await status_callback("Community research unavailable — using general context")
+
+        return result
+
     async def generate_personas(self, status_callback=None) -> list[Persona]:
         """
         Phase 2: Generate realistic debate personas.
@@ -99,6 +130,9 @@ class SimulationOrchestrator:
             if not has_council:
                 personas.append(self._create_default_council_member(city, state, proposal, company))
 
+            # Inject community research into persona system prompts
+            self._inject_community_research(personas)
+
             if status_callback:
                 await status_callback(f"Generated {len(personas)} personas")
             return personas
@@ -110,6 +144,8 @@ class SimulationOrchestrator:
 
         defaults = create_default_personas(city, proposal, company)
         defaults.append(self._create_default_council_member(city, state, proposal, company))
+        # Inject community research into defaults too
+        self._inject_community_research(defaults)
         return defaults
 
     async def analyze_debate(self, transcript_text: str, status_callback=None) -> Optional[AnalysisResult]:
@@ -130,6 +166,83 @@ class SimulationOrchestrator:
             await status_callback("Analysis complete")
 
         return result
+
+    def _inject_community_research(self, personas: list[Persona]) -> None:
+        """Inject real community research data into persona system prompts."""
+        if not self._community_research:
+            return
+
+        research = self._community_research
+
+        # Build context block from real quotes
+        quotes_text = ""
+        if research.real_quotes:
+            opposition_quotes = [q for q in research.real_quotes if q.get("sentiment") == "oppose"]
+            support_quotes = [q for q in research.real_quotes if q.get("sentiment") == "support"]
+
+            if opposition_quotes:
+                quotes_text += "\n\nREAL RESIDENT QUOTES (from actual community members):\n"
+                for q in opposition_quotes[:5]:
+                    quotes_text += f'- "{q.get("quote", "")}" — {q.get("source", "local resident")}\n'
+
+            if support_quotes:
+                quotes_text += "\nSUPPORTIVE QUOTES:\n"
+                for q in support_quotes[:3]:
+                    quotes_text += f'- "{q.get("quote", "")}" — {q.get("source", "local resident")}\n'
+
+        facts_text = ""
+        if research.notable_facts:
+            facts_text = "\n\nVERIFIED LOCAL FACTS:\n"
+            for fact in research.notable_facts[:8]:
+                facts_text += f"- {fact}\n"
+
+        context_text = ""
+        if research.local_context:
+            context_text = f"\n\nLOCAL CONTEXT:\n{research.local_context}"
+
+        sentiment_text = ""
+        if research.sentiment_summary:
+            sentiment_text = f"\n\nCOMMUNITY SENTIMENT: {research.sentiment_summary}"
+            sentiment_text += f"\nOpposition strength: {research.opposition_strength}"
+
+        # Inject into each persona's system prompt
+        from backend.models.persona import PersonaRole
+
+        for persona in personas:
+            if not persona.system_prompt:
+                continue
+
+            if persona.role == PersonaRole.RESIDENT:
+                # Residents get opposition quotes and local facts
+                addendum = "\n\n--- REAL COMMUNITY RESEARCH ---"
+                addendum += "Use these real quotes and facts to ground your arguments in reality."
+                addendum += " Reference specific local details when possible."
+                addendum += " You may paraphrase real resident concerns in your own voice."
+                addendum += quotes_text + facts_text + context_text
+                persona.system_prompt += addendum
+
+            elif persona.role == PersonaRole.PETITIONER:
+                # Petitioner gets sentiment summary to calibrate response
+                addendum = "\n\n--- REAL COMMUNITY RESEARCH ---"
+                addendum += "Be aware of the actual community mood and address real concerns."
+                addendum += sentiment_text + facts_text
+                if opposition_quotes := [q for q in research.real_quotes if q.get("sentiment") == "oppose"][:3]:
+                    addendum += "\n\nKEY REAL CONCERNS TO ADDRESS:\n"
+                    for q in opposition_quotes:
+                        addendum += f'- {q.get("concern_category", "general")}: "{q.get("quote", "")}"\n'
+                persona.system_prompt += addendum
+
+            elif persona.role == PersonaRole.COUNCIL_MEMBER:
+                # Council member gets full picture
+                addendum = "\n\n--- REAL COMMUNITY RESEARCH ---"
+                addendum += "You are aware of real community sentiment from news and public forums."
+                addendum += sentiment_text + facts_text
+                persona.system_prompt += addendum
+
+            elif persona.role == PersonaRole.MODERATOR:
+                # Moderator gets context only
+                if research.local_context:
+                    persona.system_prompt += f"\n\nLOCAL CONTEXT: {research.local_context[:500]}"
 
     def _create_default_council_member(
         self, city_name: str, state: str, proposal: str, company: str

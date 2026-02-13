@@ -47,6 +47,76 @@ def _extract_pdf_text(content: bytes, max_pages: int = 30) -> str | None:
 router = APIRouter(prefix="/api", tags=["simulations"])
 
 
+@router.post("/extract-document")
+async def extract_document(
+    document: UploadFile = File(...),
+):
+    """
+    Upload a PDF and extract structured fields for auto-filling the simulation form.
+    Uses Claude to intelligently parse city, company, proposal details, and concerns.
+    """
+    import anthropic
+    from backend.config import get_settings
+
+    settings = get_settings()
+
+    if not document or not document.filename:
+        raise HTTPException(status_code=400, detail="No document provided")
+
+    try:
+        content = await document.read()
+        if document.filename.lower().endswith(".pdf"):
+            text = _extract_pdf_text(content)
+        else:
+            text = content.decode("utf-8", errors="replace")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Could not read document")
+
+    if not text or len(text.strip()) < 50:
+        raise HTTPException(status_code=400, detail="Document appears empty or too short")
+
+    # Use Claude to extract structured fields
+    extraction_prompt = f"""Analyze this document about a data center proposal and extract the following fields.
+Return ONLY a JSON object — no other text.
+
+DOCUMENT TEXT:
+{text[:25000]}
+
+Return this exact JSON structure:
+{{
+  "city_name": "city or township name (e.g. 'Van Buren Township')",
+  "state": "two-letter state code (e.g. 'MI')",
+  "company_name": "name of the company proposing the data center",
+  "proposal_details": "A comprehensive 3-5 paragraph summary of the proposal including: facility size/specs, location details, power capacity, water usage, jobs created, tax revenue, environmental mitigations, and any community commitments. Include specific numbers and facts from the document.",
+  "concerns": ["list of concern IDs from: water, power, noise, traffic, property, environmental — include ALL that are mentioned or relevant"]
+}}
+
+Be thorough in the proposal_details — include every specific fact, number, and commitment mentioned. This text will be used to drive a realistic AI debate simulation."""
+
+    try:
+        client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
+        response = await client.messages.create(
+            model=settings.fast_model,
+            max_tokens=2000,
+            messages=[{"role": "user", "content": extraction_prompt}],
+        )
+
+        import json
+        resp_text = response.content[0].text
+        start = resp_text.find("{")
+        end = resp_text.rfind("}") + 1
+        if start == -1 or end == 0:
+            raise HTTPException(status_code=500, detail="Could not parse extraction result")
+
+        data = json.loads(resp_text[start:end])
+        return data
+
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Invalid JSON from extraction")
+    except anthropic.APIError as e:
+        raise HTTPException(status_code=500, detail=f"AI extraction failed: {str(e)}")
+
+
 @router.post("/simulations")
 async def create_simulation(
     city_name: str = Form(...),

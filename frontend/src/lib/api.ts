@@ -37,6 +37,31 @@ export async function createSimulation(data: {
   return response.json();
 }
 
+export interface ExtractedDocument {
+  city_name: string;
+  state: string;
+  company_name: string;
+  proposal_details: string;
+  concerns: string[];
+}
+
+export async function extractDocument(file: File): Promise<ExtractedDocument> {
+  const formData = new FormData();
+  formData.append('document', file);
+
+  const response = await fetch(`${API_BASE}/api/extract-document`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ detail: response.statusText }));
+    throw new Error(err.detail || 'Failed to extract document');
+  }
+
+  return response.json();
+}
+
 export function getWebSocketUrl(simulationId: string): string {
   // Derive WS URL from API URL if VITE_WS_BASE_URL is not set
   let wsBase = import.meta.env.VITE_WS_BASE_URL;

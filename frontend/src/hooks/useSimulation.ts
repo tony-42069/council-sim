@@ -153,6 +153,43 @@ export function useSimulation(simulationId: string | undefined) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const wsRef = useRef<WebSocket | null>(null);
 
+  // --- Token throttling for readable speed ---
+  const TOKEN_DELAY_MS = 35; // ~28 tokens/sec — comfortable reading speed
+  const tokenQueueRef = useRef<Array<{ turnId: string; token: string; personaId: string }>>([]);
+  const tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSpeakingEndRef = useRef<{ turnId: string; personaId: string; fullText: string } | null>(null);
+
+  const processTokenQueue = useCallback(() => {
+    const queue = tokenQueueRef.current;
+
+    if (queue.length === 0) {
+      tokenTimerRef.current = null;
+
+      // If a speaking_end was queued while tokens were draining, fire it now
+      const pending = pendingSpeakingEndRef.current;
+      if (pending) {
+        pendingSpeakingEndRef.current = null;
+        dispatch({
+          type: 'SPEAKING_END',
+          turnId: pending.turnId,
+          personaId: pending.personaId,
+          fullText: pending.fullText,
+        });
+      }
+      return;
+    }
+
+    const next = queue.shift()!;
+    dispatch({
+      type: 'TOKEN',
+      turnId: next.turnId,
+      token: next.token,
+      personaId: next.personaId,
+    });
+
+    tokenTimerRef.current = setTimeout(processTokenQueue, TOKEN_DELAY_MS);
+  }, []);
+
   const handleMessage = useCallback((event: MessageEvent) => {
     try {
       const msg: WSMessage = JSON.parse(event.data);
@@ -172,6 +209,14 @@ export function useSimulation(simulationId: string | undefined) {
           break;
 
         case 'speaking_start':
+          // Clear any leftover queue from previous speaker
+          tokenQueueRef.current = [];
+          if (tokenTimerRef.current) {
+            clearTimeout(tokenTimerRef.current);
+            tokenTimerRef.current = null;
+          }
+          pendingSpeakingEndRef.current = null;
+
           dispatch({
             type: 'SPEAKING_START',
             turnId: p.turn_id as string,
@@ -182,21 +227,35 @@ export function useSimulation(simulationId: string | undefined) {
           break;
 
         case 'token':
-          dispatch({
-            type: 'TOKEN',
+          // Buffer tokens instead of dispatching immediately
+          tokenQueueRef.current.push({
             turnId: p.turn_id as string,
             token: p.token as string,
             personaId: p.persona_id as string,
           });
+          // Start draining if not already running
+          if (!tokenTimerRef.current) {
+            processTokenQueue();
+          }
           break;
 
         case 'speaking_end':
-          dispatch({
-            type: 'SPEAKING_END',
+          // Wait for token queue to drain, then fire speaking_end
+          pendingSpeakingEndRef.current = {
             turnId: p.turn_id as string,
             personaId: p.persona_id as string,
             fullText: p.full_text as string,
-          });
+          };
+          // If no tokens buffered, fire immediately
+          if (tokenQueueRef.current.length === 0 && !tokenTimerRef.current) {
+            pendingSpeakingEndRef.current = null;
+            dispatch({
+              type: 'SPEAKING_END',
+              turnId: p.turn_id as string,
+              personaId: p.persona_id as string,
+              fullText: p.full_text as string,
+            });
+          }
           break;
 
         case 'analysis':
@@ -218,7 +277,7 @@ export function useSimulation(simulationId: string | undefined) {
     } catch {
       console.error('Failed to parse WebSocket message');
     }
-  }, []);
+  }, [processTokenQueue]);
 
   useEffect(() => {
     if (!simulationId) return;
@@ -235,6 +294,12 @@ export function useSimulation(simulationId: string | undefined) {
     return () => {
       ws.close();
       wsRef.current = null;
+      // Clean up token timer
+      if (tokenTimerRef.current) {
+        clearTimeout(tokenTimerRef.current);
+        tokenTimerRef.current = null;
+      }
+      tokenQueueRef.current = [];
     };
   }, [simulationId, handleMessage]);
 

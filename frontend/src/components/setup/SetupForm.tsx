@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { createSimulation } from '../../lib/api';
+import { createSimulation, extractDocument } from '../../lib/api';
 
 const CONCERN_OPTIONS = [
   { id: 'water', label: 'Water Usage', desc: 'Cooling system consumption', icon: '\u{1F4A7}' },
@@ -53,12 +53,38 @@ export default function SetupForm() {
   const [selectedConcerns, setSelectedConcerns] = useState<string[]>([]);
   const [document, setDocument] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [error, setError] = useState('');
 
   const toggleConcern = (id: string) => {
     setSelectedConcerns(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     );
+  };
+
+  const handleDocumentUpload = async (file: File) => {
+    setDocument(file);
+    setIsExtracting(true);
+    setError('');
+
+    try {
+      const extracted = await extractDocument(file);
+      if (extracted.city_name) setCity(extracted.city_name);
+      if (extracted.state) setState(extracted.state);
+      if (extracted.company_name) setCompany(extracted.company_name);
+      if (extracted.proposal_details) setProposal(extracted.proposal_details);
+      if (extracted.concerns?.length) {
+        const validConcerns = extracted.concerns.filter(c =>
+          CONCERN_OPTIONS.some(opt => opt.id === c)
+        );
+        if (validConcerns.length) setSelectedConcerns(validConcerns);
+      }
+    } catch (err) {
+      console.error('Document extraction failed:', err);
+      // Silently continue — user can still fill manually
+    } finally {
+      setIsExtracting(false);
+    }
   };
 
   const loadPreset = (preset: typeof PRESET_SCENARIOS[0]) => {
@@ -112,8 +138,8 @@ export default function SetupForm() {
           <span className="text-gradient-warm">Debate</span>
         </h2>
         <p className="text-chamber-muted text-lg max-w-2xl mx-auto leading-relaxed">
-          Enter your data center proposal and watch AI agents debate it in real-time.
-          Get approval scoring, key arguments, and actionable rebuttals.
+          Upload a proposal PDF and our AI agents handle the rest — or fill in the details manually.
+          Watch a live debate, then get approval scoring and actionable rebuttals.
         </p>
       </motion.div>
 
@@ -146,11 +172,116 @@ export default function SetupForm() {
 
       {/* Form */}
       <form onSubmit={handleSubmit}>
+        {/* Document Upload Card — PRIMARY ACTION */}
+        <motion.div
+          className="glass-card rounded-2xl p-6 sm:p-8 mb-5 relative overflow-hidden"
+          {...fadeInUp}
+          transition={{ delay: 0.2 }}
+        >
+          {/* Subtle highlight border for primary action */}
+          <div className="absolute inset-0 rounded-2xl border border-accent-blue/20 pointer-events-none" />
+
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center text-accent-blue text-sm">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M9 1.5H4a1.5 1.5 0 00-1.5 1.5v10A1.5 1.5 0 004 14.5h8a1.5 1.5 0 001.5-1.5V6L9 1.5z" />
+                <path d="M9 1.5V6h4.5" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="text-lg font-normal font-display">Upload Proposal Document</h3>
+              <p className="text-xs text-chamber-muted">Drop a PDF and AI auto-fills everything below</p>
+            </div>
+          </div>
+
+          <div
+            className={`relative rounded-xl border-2 border-dashed p-8 text-center transition-all cursor-pointer ${
+              document
+                ? 'border-accent-blue/40 bg-accent-blue/5'
+                : 'border-chamber-border hover:border-accent-blue/30'
+            }`}
+            onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-accent-blue/50'); }}
+            onDragLeave={e => { e.currentTarget.classList.remove('border-accent-blue/50'); }}
+            onDrop={e => {
+              e.preventDefault();
+              e.currentTarget.classList.remove('border-accent-blue/50');
+              const file = e.dataTransfer.files[0];
+              if (file && file.type === 'application/pdf') handleDocumentUpload(file);
+            }}
+            onClick={() => {
+              if (!document) {
+                const input = window.document.createElement('input');
+                input.type = 'file';
+                input.accept = '.pdf';
+                input.onchange = (ev) => {
+                  const file = (ev.target as HTMLInputElement).files?.[0];
+                  if (file) handleDocumentUpload(file);
+                };
+                input.click();
+              }
+            }}
+          >
+            {document ? (
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-accent-blue/10 flex items-center justify-center">
+                  {isExtracting ? (
+                    <span className="w-5 h-5 border-2 border-accent-blue/30 border-t-accent-blue rounded-full animate-spin" />
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent-blue">
+                      <path d="M9 1.5H4a1.5 1.5 0 00-1.5 1.5v10A1.5 1.5 0 004 14.5h8a1.5 1.5 0 001.5-1.5V6L9 1.5z" />
+                      <path d="M9 1.5V6h4.5" />
+                    </svg>
+                  )}
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-accent-blue">{document.name}</p>
+                  <p className="text-xs text-chamber-muted">
+                    {isExtracting ? 'AI is reading and extracting details...' : `${(document.size / 1024 / 1024).toFixed(1)} MB — Fields auto-filled`}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setDocument(null); }}
+                  className="ml-4 text-xs px-3 py-1.5 rounded-lg border border-chamber-border text-chamber-muted hover:text-accent-red hover:border-accent-red/30 transition-colors"
+                  disabled={isExtracting}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="w-12 h-12 rounded-xl bg-chamber-surface-2 flex items-center justify-center mx-auto mb-3">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-chamber-muted/60">
+                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                  </svg>
+                </div>
+                <p className="text-sm text-chamber-muted mb-1">
+                  Drop a PDF here or <span className="text-accent-blue font-medium">browse files</span>
+                </p>
+                <p className="text-[11px] text-chamber-muted/40">
+                  Supports large documents (70+ pages) with smart extraction
+                </p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Divider — or fill manually */}
+        <motion.div
+          className="flex items-center gap-3 my-6"
+          {...fadeInUp}
+          transition={{ delay: 0.25 }}
+        >
+          <div className="h-px flex-1 bg-chamber-border/50" />
+          <span className="text-xs font-semibold text-chamber-muted uppercase tracking-wider">Review & Customize</span>
+          <div className="h-px flex-1 bg-chamber-border/50" />
+        </motion.div>
+
         {/* Location Card */}
         <motion.div
           className="glass-card rounded-2xl p-6 sm:p-8 mb-5"
           {...fadeInUp}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-8 rounded-lg bg-accent-blue/10 flex items-center justify-center text-accent-blue text-sm">
@@ -207,7 +338,7 @@ export default function SetupForm() {
         <motion.div
           className="glass-card rounded-2xl p-6 sm:p-8 mb-5"
           {...fadeInUp}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.35 }}
         >
           <div className="flex items-center gap-3 mb-5">
             <div className="w-8 h-8 rounded-lg bg-accent-cyan/10 flex items-center justify-center text-accent-cyan text-sm">
@@ -218,108 +349,24 @@ export default function SetupForm() {
             </div>
             <div>
               <h3 className="text-lg font-normal font-display">Proposal Details *</h3>
-              <p className="text-xs text-chamber-muted">Include size, capacity, jobs, and community benefits</p>
+              <p className="text-xs text-chamber-muted">Auto-filled from document — edit to refine</p>
             </div>
           </div>
 
           <textarea
             value={proposal}
             onChange={e => setProposal(e.target.value)}
-            placeholder="Describe the data center proposal: facility size, power capacity, water usage, location details, number of jobs, tax revenue, community commitments, environmental mitigations..."
+            placeholder="Upload a PDF above to auto-fill, or describe the proposal manually: facility size, power capacity, water usage, location, jobs, tax revenue, community commitments..."
             rows={6}
             className="w-full px-4 py-3 rounded-xl bg-chamber-bg/60 border border-chamber-border text-chamber-text placeholder:text-chamber-muted/40 focus:outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all text-sm leading-relaxed resize-none"
           />
           <div className="flex items-center justify-between mt-2">
             <p className="text-[11px] text-chamber-muted/50">
-              More detail = more realistic debate. Paste meeting minutes, proposal specs, etc.
+              More detail = more realistic debate
             </p>
             <p className="text-[11px] text-chamber-muted/50 font-mono">
               {proposal.length.toLocaleString()} chars
             </p>
-          </div>
-        </motion.div>
-
-        {/* Document Upload Card */}
-        <motion.div
-          className="glass-card rounded-2xl p-6 sm:p-8 mb-5"
-          {...fadeInUp}
-          transition={{ delay: 0.35 }}
-        >
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-accent-purple/10 flex items-center justify-center text-accent-purple text-sm">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M9 1.5H4a1.5 1.5 0 00-1.5 1.5v10A1.5 1.5 0 004 14.5h8a1.5 1.5 0 001.5-1.5V6L9 1.5z" />
-                <path d="M9 1.5V6h4.5" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-lg font-normal font-display">Proposal Document</h3>
-              <p className="text-xs text-chamber-muted">Optional PDF — AI will extract and analyze key details</p>
-            </div>
-          </div>
-
-          <div
-            className={`relative rounded-xl border-2 border-dashed p-8 text-center transition-all cursor-pointer ${
-              document
-                ? 'border-accent-blue/40 bg-accent-blue/5'
-                : 'border-chamber-border hover:border-accent-blue/30'
-            }`}
-            onDragOver={e => { e.preventDefault(); e.currentTarget.classList.add('border-accent-blue/50'); }}
-            onDragLeave={e => { e.currentTarget.classList.remove('border-accent-blue/50'); }}
-            onDrop={e => {
-              e.preventDefault();
-              e.currentTarget.classList.remove('border-accent-blue/50');
-              const file = e.dataTransfer.files[0];
-              if (file && file.type === 'application/pdf') setDocument(file);
-            }}
-            onClick={() => {
-              if (!document) {
-                const input = window.document.createElement('input');
-                input.type = 'file';
-                input.accept = '.pdf';
-                input.onchange = (ev) => {
-                  const file = (ev.target as HTMLInputElement).files?.[0];
-                  if (file) setDocument(file);
-                };
-                input.click();
-              }
-            }}
-          >
-            {document ? (
-              <div className="flex items-center justify-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent-blue/10 flex items-center justify-center">
-                  <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent-blue">
-                    <path d="M9 1.5H4a1.5 1.5 0 00-1.5 1.5v10A1.5 1.5 0 004 14.5h8a1.5 1.5 0 001.5-1.5V6L9 1.5z" />
-                    <path d="M9 1.5V6h4.5" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <p className="text-sm font-medium text-accent-blue">{document.name}</p>
-                  <p className="text-xs text-chamber-muted">{(document.size / 1024 / 1024).toFixed(1)} MB</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setDocument(null); }}
-                  className="ml-4 text-xs px-3 py-1.5 rounded-lg border border-chamber-border text-chamber-muted hover:text-accent-red hover:border-accent-red/30 transition-colors"
-                >
-                  Remove
-                </button>
-              </div>
-            ) : (
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-chamber-surface-2 flex items-center justify-center mx-auto mb-3">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-chamber-muted/60">
-                    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-                  </svg>
-                </div>
-                <p className="text-sm text-chamber-muted mb-1">
-                  Drop a PDF here or <span className="text-accent-blue font-medium">browse files</span>
-                </p>
-                <p className="text-[11px] text-chamber-muted/40">
-                  Supports large documents (70+ pages) with smart extraction
-                </p>
-              </div>
-            )}
           </div>
         </motion.div>
 

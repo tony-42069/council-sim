@@ -130,6 +130,21 @@ async def run_simulation(simulation_id: str):
             if doc_data:
                 await stream.send_status(simulation_id, "Document analysis complete")
 
+        # --- Phase 1.5: Community Research ---
+        await stream.send_status(simulation_id, "Researching real community sentiment...")
+        try:
+            research = await orchestrator.research_community(
+                status_callback=lambda msg: stream.send_status(simulation_id, msg),
+            )
+            if research:
+                await stream.send_status(
+                    simulation_id,
+                    f"Found {len(research.real_quotes)} real community quotes",
+                )
+        except Exception as e:
+            print(f"[WARN] Community research failed (non-fatal): {e}")
+            await stream.send_status(simulation_id, "Community research skipped — continuing...")
+
         # --- Phase 1: Persona Generation ---
         await manager.update_status(simulation_id, SimulationStatus.GENERATING_PERSONAS)
         await stream.send_status(simulation_id, "Generating personas...")
