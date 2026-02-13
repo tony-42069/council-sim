@@ -86,7 +86,7 @@ async def analyze_debate_with_sdk(
             async for message in query(
                 prompt=prompt,
                 options=ClaudeAgentOptions(
-                    model="claude-opus-4-6-20250610",  # Opus for deep analysis
+                    model="claude-opus-4-6",  # Opus for deep analysis
                     max_turns=10,
                     max_budget_usd=1.50,
                     permission_mode="bypassPermissions",

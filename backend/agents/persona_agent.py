@@ -80,7 +80,7 @@ async def generate_personas_with_sdk(
             async for message in query(
                 prompt=prompt,
                 options=ClaudeAgentOptions(
-                    model="claude-opus-4-6-20250610",
+                    model="claude-opus-4-6",
                     max_turns=10,
                     max_budget_usd=1.00,
                     permission_mode="bypassPermissions",

@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
 
     # Model configuration
-    debate_model: str = "claude-opus-4-6-20250610"
-    analysis_model: str = "claude-opus-4-6-20250610"
+    debate_model: str = "claude-opus-4-6"
+    analysis_model: str = "claude-opus-4-6"
     fast_model: str = "claude-sonnet-4-5-20250929"
 
     # Debate settings
