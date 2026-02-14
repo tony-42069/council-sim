@@ -4,7 +4,6 @@ Analyzes completed debate transcripts and generates scoring, arguments, and rebu
 """
 
 import json
-import asyncio
 from typing import Optional
 
 from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage, TextBlock
@@ -66,12 +65,12 @@ async def analyze_debate_with_sdk(
     transcript_text: str,
     proposal_summary: str,
     mcp_server_config: dict,
-    timeout_seconds: int = 90,
 ) -> Optional[AnalysisResult]:
     """
     Use the Agent SDK to analyze a completed debate transcript.
 
     Returns an AnalysisResult, or None on failure.
+    No hard timeout — let the agent finish its work.
     """
     prompt = DEBATE_ANALYSIS_PROMPT.format(
         transcript_text=transcript_text[:12000],  # Cap for context window
@@ -81,33 +80,26 @@ async def analyze_debate_with_sdk(
     try:
         result_text = ""
 
-        async def _run_query():
-            nonlocal result_text
-            async for message in query(
-                prompt=prompt,
-                options=ClaudeAgentOptions(
-                    model="claude-opus-4-6",  # Opus for deep analysis
-                    max_turns=10,
-                    max_budget_usd=1.50,
-                    permission_mode="bypassPermissions",
-                    mcp_servers=mcp_server_config,
-                    allowed_tools=[
-                        "mcp__council-tools__compute_approval_score",
-                    ],
-                ),
-            ):
-                if isinstance(message, (AssistantMessage, ResultMessage)):
-                    for block in message.content:
-                        if isinstance(block, TextBlock):
-                            result_text += block.text
-
-        await asyncio.wait_for(_run_query(), timeout=timeout_seconds)
+        async for message in query(
+            prompt=prompt,
+            options=ClaudeAgentOptions(
+                model="claude-opus-4-6",  # Opus for deep analysis
+                max_turns=10,
+                max_budget_usd=2.00,
+                permission_mode="bypassPermissions",
+                mcp_servers=mcp_server_config,
+                allowed_tools=[
+                    "mcp__council-tools__compute_approval_score",
+                ],
+            ),
+        ):
+            if isinstance(message, (AssistantMessage, ResultMessage)):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        result_text += block.text
 
         return _parse_analysis_response(result_text)
 
-    except asyncio.TimeoutError:
-        print(f"[WARN] Debate analysis timed out after {timeout_seconds}s")
-        return None
     except Exception as e:
         print(f"[WARN] Debate analysis failed: {e}")
         return None

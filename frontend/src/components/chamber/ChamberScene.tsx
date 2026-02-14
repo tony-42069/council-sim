@@ -162,6 +162,31 @@ export default function ChamberScene({ personas, currentSpeakerId, currentPhase 
         </div>
       )}
 
+      {/* Deliberation overlay — pulsing glow when no one is at podium during deliberation */}
+      {currentPhase === 'deliberation' && !currentSpeakerId && (
+        <motion.div
+          className="absolute inset-0 z-5 flex items-center justify-center pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.div
+            className="px-6 py-3 rounded-xl bg-chamber-bg/70 border border-accent-amber/20 backdrop-blur-sm text-center"
+            animate={{ scale: [1, 1.02, 1], borderColor: ['rgba(245,158,11,0.2)', 'rgba(245,158,11,0.4)', 'rgba(245,158,11,0.2)'] }}
+            transition={{ repeat: Infinity, duration: 2.5 }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <motion.span
+                className="w-2 h-2 rounded-full bg-accent-amber"
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              />
+              <span className="text-xs font-bold text-accent-amber uppercase tracking-wider">Deliberating</span>
+            </div>
+            <p className="text-[10px] text-chamber-muted/60">Council is reviewing all testimony</p>
+          </motion.div>
+        </motion.div>
+      )}
+
       {/* Persona figures at their positions */}
       {personas.map(persona => {
         const isSpeaking = persona.id === currentSpeakerId;

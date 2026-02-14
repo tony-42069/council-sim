@@ -91,7 +91,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="relative max-w-6xl mx-auto overflow-hidden">
+    <div className="relative max-w-7xl mx-auto overflow-hidden">
       {/* Animated background orbs */}
       <div className="fixed inset-0 pointer-events-none -z-10">
         <motion.div
@@ -160,21 +160,21 @@ export default function LandingPage() {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           {STEPS.map((s, i) => (
-            <div key={s.num} className="flex items-center gap-2 sm:gap-4">
-              <div className="flex items-center gap-2">
+            <div key={s.num} className="flex items-center gap-3 sm:gap-5">
+              <div className="flex items-center gap-3">
                 <span
-                  className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                  className="text-xs font-bold px-2.5 py-1 rounded-lg"
                   style={{ backgroundColor: `${s.color}15`, color: s.color }}
                 >
                   {s.num}
                 </span>
                 <div className="text-left">
-                  <span className="text-xs font-semibold text-chamber-text block leading-tight">{s.label}</span>
-                  <span className="text-[10px] text-chamber-muted/60 hidden sm:block">{s.desc}</span>
+                  <span className="text-sm font-semibold text-chamber-text block leading-tight">{s.label}</span>
+                  <span className="text-xs text-chamber-muted/60 hidden sm:block">{s.desc}</span>
                 </div>
               </div>
               {i < STEPS.length - 1 && (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-chamber-border shrink-0">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="none" className="text-chamber-border/60 shrink-0">
                   <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" />
                 </svg>
               )}
@@ -238,7 +238,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <p className="text-base font-semibold text-accent-blue">{extractionStep}</p>
-                <p className="text-sm text-chamber-muted mt-1.5">This takes about 10 seconds</p>
+                <p className="text-sm text-chamber-muted mt-1.5">This will only take a few moments</p>
               </div>
               {/* Progress bar */}
               <div className="w-48 h-1 rounded-full bg-chamber-border/30 overflow-hidden">

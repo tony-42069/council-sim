@@ -245,31 +245,25 @@ async def run_simulation(simulation_id: str):
         async def analysis_progress(msg: str):
             await agent_status(msg, "debate_analyst", "active")
 
-        # Attempt 1: Agent SDK analysis with Opus (90s timeout)
+        # Attempt 1: Agent SDK analysis with Opus (no hard timeout — let it finish)
         await analysis_progress("Evaluating argument quality from both sides...")
         try:
-            analysis_result = await asyncio.wait_for(
-                orchestrator.analyze_debate(
-                    transcript_text=transcript_text,
-                    status_callback=lambda msg: analysis_progress(msg),
-                ),
-                timeout=90,
+            analysis_result = await orchestrator.analyze_debate(
+                transcript_text=transcript_text,
+                status_callback=lambda msg: analysis_progress(msg),
             )
-        except (asyncio.TimeoutError, Exception) as e:
+        except Exception as e:
             print(f"[WARN] Agent SDK analysis failed: {e}")
 
-        # Attempt 2: Direct Opus API fallback (90s timeout)
+        # Attempt 2: Direct Opus API fallback (no hard timeout)
         if not analysis_result:
             print("[INFO] Trying direct Opus fallback analysis...")
             await analysis_progress("Computing approval score and generating rebuttals...")
             try:
-                analysis_result = await asyncio.wait_for(
-                    _fallback_analysis(
-                        client, transcript_text, state.input.proposal_details, settings,
-                    ),
-                    timeout=90,
+                analysis_result = await _fallback_analysis(
+                    client, transcript_text, state.input.proposal_details, settings,
                 )
-            except (asyncio.TimeoutError, Exception) as e:
+            except Exception as e:
                 print(f"[WARN] Opus fallback analysis failed: {e}")
 
         if analysis_result:

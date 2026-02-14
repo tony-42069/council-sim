@@ -163,7 +163,7 @@ export function useSimulation(simulationId: string | undefined) {
   const wsRef = useRef<WebSocket | null>(null);
 
   // --- Token throttling for readable speed ---
-  const TOKEN_DELAY_MS = 55; // ~18 tokens/sec — comfortable reading speed
+  const TOKEN_DELAY_MS = 80; // ~12 tokens/sec — readable pace for demo
   const tokenQueueRef = useRef<Array<{ turnId: string; token: string; personaId: string }>>([]);
   const tokenTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSpeakingEndRef = useRef<{ turnId: string; personaId: string; fullText: string } | null>(null);
