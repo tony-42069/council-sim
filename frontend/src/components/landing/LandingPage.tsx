@@ -92,26 +92,99 @@ export default function LandingPage() {
 
   return (
     <div className="relative max-w-7xl mx-auto overflow-hidden">
-      {/* Animated background orbs */}
-      <div className="fixed inset-0 pointer-events-none -z-10">
+      {/* Animated background */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        {/* Gradient orbs */}
         <motion.div
-          className="absolute w-[500px] h-[500px] rounded-full bg-accent-blue/[0.04] blur-[100px]"
+          className="absolute w-[500px] h-[500px] rounded-full bg-accent-blue/[0.05] blur-[100px]"
           animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
           transition={{ repeat: Infinity, duration: 20, ease: 'easeInOut' }}
           style={{ top: '5%', left: '10%' }}
         />
         <motion.div
-          className="absolute w-[400px] h-[400px] rounded-full bg-accent-purple/[0.04] blur-[100px]"
+          className="absolute w-[400px] h-[400px] rounded-full bg-accent-purple/[0.05] blur-[100px]"
           animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
           transition={{ repeat: Infinity, duration: 15, ease: 'easeInOut' }}
           style={{ top: '30%', right: '5%' }}
         />
         <motion.div
-          className="absolute w-[300px] h-[300px] rounded-full bg-accent-cyan/[0.03] blur-[80px]"
+          className="absolute w-[300px] h-[300px] rounded-full bg-accent-amber/[0.03] blur-[80px]"
           animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
           transition={{ repeat: Infinity, duration: 18, ease: 'easeInOut' }}
           style={{ bottom: '10%', left: '30%' }}
         />
+
+        {/* Animated cityscape silhouette at bottom */}
+        <svg className="absolute bottom-0 left-0 w-full h-[200px] opacity-[0.04]" viewBox="0 0 1440 200">
+          {/* City Hall */}
+          <rect x="100" y="80" width="120" height="120" rx="2" fill="rgba(59,130,246,0.3)" />
+          <rect x="130" y="60" width="60" height="20" rx="1" fill="rgba(59,130,246,0.3)" />
+          <polygon points="130,60 160,40 190,60" fill="rgba(59,130,246,0.25)" />
+          {/* Data Center */}
+          <rect x="350" y="60" width="180" height="140" rx="3" fill="rgba(99,102,241,0.3)" />
+          <rect x="360" y="70" width="30" height="20" rx="1" fill="rgba(99,102,241,0.15)" />
+          <rect x="400" y="70" width="30" height="20" rx="1" fill="rgba(99,102,241,0.15)" />
+          <rect x="440" y="70" width="30" height="20" rx="1" fill="rgba(99,102,241,0.15)" />
+          <rect x="480" y="70" width="30" height="20" rx="1" fill="rgba(99,102,241,0.15)" />
+          {/* Houses */}
+          <rect x="620" y="130" width="50" height="70" rx="2" fill="rgba(34,197,94,0.2)" />
+          <polygon points="620,130 645,105 670,130" fill="rgba(34,197,94,0.15)" />
+          <rect x="690" y="140" width="45" height="60" rx="2" fill="rgba(34,197,94,0.2)" />
+          <polygon points="690,140 712,118 735,140" fill="rgba(34,197,94,0.15)" />
+          <rect x="755" y="125" width="55" height="75" rx="2" fill="rgba(34,197,94,0.2)" />
+          <polygon points="755,125 782,100 810,125" fill="rgba(34,197,94,0.15)" />
+          {/* School */}
+          <rect x="890" y="100" width="100" height="100" rx="2" fill="rgba(245,158,11,0.2)" />
+          <rect x="920" y="85" width="40" height="15" rx="1" fill="rgba(245,158,11,0.2)" />
+          {/* Trees */}
+          <circle cx="580" cy="160" r="20" fill="rgba(34,197,94,0.1)" />
+          <circle cx="850" cy="155" r="18" fill="rgba(34,197,94,0.1)" />
+          <circle cx="1050" cy="160" r="22" fill="rgba(34,197,94,0.1)" />
+          {/* More buildings far right */}
+          <rect x="1060" y="110" width="80" height="90" rx="2" fill="rgba(59,130,246,0.2)" />
+          <rect x="1160" y="130" width="60" height="70" rx="2" fill="rgba(59,130,246,0.15)" />
+          <rect x="1240" y="100" width="100" height="100" rx="2" fill="rgba(99,102,241,0.2)" />
+          {/* Ground line */}
+          <rect x="0" y="198" width="1440" height="2" fill="rgba(59,130,246,0.1)" />
+        </svg>
+
+        {/* Floating connection lines */}
+        <svg className="absolute inset-0 w-full h-full opacity-[0.03]">
+          <motion.line
+            x1="20%" y1="30%" x2="40%" y2="50%"
+            stroke="rgba(59,130,246,0.5)" strokeWidth="1" strokeDasharray="4 4"
+            animate={{ opacity: [0.3, 0.8, 0.3] }}
+            transition={{ repeat: Infinity, duration: 4 }}
+          />
+          <motion.line
+            x1="60%" y1="20%" x2="80%" y2="45%"
+            stroke="rgba(168,85,247,0.5)" strokeWidth="1" strokeDasharray="4 4"
+            animate={{ opacity: [0.5, 0.2, 0.5] }}
+            transition={{ repeat: Infinity, duration: 5 }}
+          />
+          <motion.line
+            x1="30%" y1="60%" x2="70%" y2="75%"
+            stroke="rgba(6,182,212,0.5)" strokeWidth="1" strokeDasharray="4 4"
+            animate={{ opacity: [0.2, 0.6, 0.2] }}
+            transition={{ repeat: Infinity, duration: 3.5 }}
+          />
+          {/* Floating dots at intersections */}
+          <motion.circle
+            cx="40%" cy="50%" r="3" fill="rgba(59,130,246,0.4)"
+            animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0.8, 0.4] }}
+            transition={{ repeat: Infinity, duration: 3 }}
+          />
+          <motion.circle
+            cx="80%" cy="45%" r="3" fill="rgba(168,85,247,0.4)"
+            animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0.8, 0.4] }}
+            transition={{ repeat: Infinity, duration: 4, delay: 1 }}
+          />
+          <motion.circle
+            cx="70%" cy="75%" r="3" fill="rgba(6,182,212,0.4)"
+            animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0.8, 0.4] }}
+            transition={{ repeat: Infinity, duration: 3.5, delay: 0.5 }}
+          />
+        </svg>
       </div>
 
       {/* ===== HERO SECTION ===== */}
@@ -124,7 +197,7 @@ export default function LandingPage() {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-purple/8 border border-accent-purple/15 text-xs font-medium text-accent-purple mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-accent-purple animate-pulse" />
-            Multi-Agent AI Simulation
+            Multi-Agent AI Simulation &middot; Powered by Claude Opus 4.6
           </div>
         </motion.div>
 
@@ -135,10 +208,9 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
         >
-          Prepare for Your
+          <span className="text-gradient">City Council</span>
           <br />
-          <span className="text-gradient">City Council</span>{' '}
-          <span className="text-gradient-warm">Debate</span>
+          <span className="text-gradient-warm">Simulator</span>
         </motion.h1>
 
         {/* Subheadline */}
@@ -148,8 +220,10 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
         >
-          Upload a data center proposal and watch AI agents simulate a full city council meeting
-          — then get approval scoring and actionable rebuttals.
+          Prepare for NIMBY opposition before it happens. Upload your data center proposal
+          and watch 5 AI agents — residents, a council member, and a moderator — debate it live.
+          Get an approval score, identify the strongest opposition arguments, and walk into your
+          real council meeting with battle-tested rebuttals.
         </motion.p>
 
         {/* Steps row */}

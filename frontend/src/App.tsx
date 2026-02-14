@@ -28,10 +28,10 @@ function AppContent() {
             </div>
             <div className="flex flex-col">
               <h1 className="text-lg font-bold text-chamber-text leading-tight font-display">
-                Council Simulator
+                City Council Simulator
               </h1>
               <span className="text-[10px] font-medium text-accent-blue/80 uppercase tracking-widest leading-tight hidden sm:block">
-                AI-Powered Debate Simulator
+                AI-Powered NIMBY Debate Engine
               </span>
             </div>
           </a>
