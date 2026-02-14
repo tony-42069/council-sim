@@ -92,7 +92,7 @@ export default function LandingPage() {
 
   return (
     <div className="relative mx-auto">
-      {/* Animated background orbs — subtle and clean */}
+      {/* Animated background orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
           className="absolute w-[600px] h-[600px] rounded-full bg-accent-blue/[0.06] blur-[120px]"
@@ -112,15 +112,6 @@ export default function LandingPage() {
           transition={{ repeat: Infinity, duration: 18, ease: 'easeInOut' }}
           style={{ bottom: '5%', left: '25%' }}
         />
-      </div>
-
-      {/* Background illustration — bottom section only, faded into dark bg */}
-      <div className="absolute bottom-0 left-0 right-0 h-[400px] pointer-events-none overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-bottom bg-no-repeat opacity-[0.08]"
-          style={{ backgroundImage: 'url(/background.png)' }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-chamber-bg via-chamber-bg/90 to-transparent" />
       </div>
 
       {/* ===== HERO SECTION ===== */}
