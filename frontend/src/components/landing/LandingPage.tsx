@@ -92,7 +92,16 @@ export default function LandingPage() {
 
   return (
     <div className="relative max-w-7xl mx-auto overflow-hidden">
-      {/* Animated background */}
+      {/* Background illustration */}
+      <div className="fixed inset-0 pointer-events-none -z-20 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.07]"
+          style={{ backgroundImage: 'url(/background.png)', backgroundPosition: 'center 60%' }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-chamber-bg via-chamber-bg/80 to-chamber-bg/40" />
+      </div>
+
+      {/* Animated background effects */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
         {/* Gradient orbs */}
         <motion.div
