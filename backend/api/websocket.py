@@ -28,49 +28,60 @@ async def _fallback_analysis(
     proposal_summary: str,
     settings: Settings,
 ) -> AnalysisResult | None:
-    """Direct Anthropic API fallback when Agent SDK analysis fails. Always uses Opus."""
-    prompt = f"""Analyze this city council debate transcript about a data center proposal.
+    """Direct Anthropic API analysis. Primary method — simple and reliable."""
+    # Cap transcript to avoid overwhelming the model
+    transcript_capped = transcript_text[:10000]
+    proposal_capped = proposal_summary[:2000]
+
+    prompt = f"""You are a political strategy consultant. Analyze this city council debate transcript about a data center proposal.
 
 TRANSCRIPT:
-{transcript_text[:15000]}
+{transcript_capped}
 
 PROPOSAL:
-{proposal_summary[:3000]}
+{proposal_capped}
 
-Return ONLY a JSON object with this exact structure:
+Respond with ONLY a valid JSON object (no markdown, no explanation before or after). Use this exact structure:
+
 {{
-  "approval_score": <number 0-100>,
-  "approval_label": "Likely Denied" | "Uncertain" | "Likely Approved" | "Strong Approval",
-  "approval_reasoning": "2-3 sentences explaining the score",
+  "approval_score": 62,
+  "approval_label": "Uncertain",
+  "approval_reasoning": "The petitioner made strong economic arguments but failed to adequately address water and environmental concerns raised by residents.",
   "key_arguments": [
-    {{"side": "opposition" or "petitioner", "argument": "specific argument", "strength": "strong" | "moderate" | "weak", "relevant_data": "data cited"}}
+    {{"side": "opposition", "argument": "Water consumption threatens local aquifer", "strength": "strong", "relevant_data": "600,000 gallons per day cited"}},
+    {{"side": "petitioner", "argument": "Closed-loop cooling recycles 95% of water", "strength": "moderate", "relevant_data": "Industry standard data"}}
   ],
   "recommended_rebuttals": [
-    {{"concern": "specific concern", "rebuttal": "recommended response", "supporting_data": "stats to cite", "effectiveness": "high" | "moderate" | "low"}}
+    {{"concern": "Water usage impact", "rebuttal": "Commission an independent water study before the next hearing", "supporting_data": "GLWA capacity assessment", "effectiveness": "high"}}
   ],
-  "strongest_opposition_point": "single strongest resident argument",
-  "weakest_opposition_point": "weakest resident argument",
-  "overall_assessment": "3-4 sentences of strategic advice"
+  "strongest_opposition_point": "No independent environmental impact study has been conducted",
+  "weakest_opposition_point": "Speculation about nuclear power without evidence",
+  "overall_assessment": "The petitioner should commission independent studies on water and environmental impact before the next hearing. Address specific concerns raised by Dr. Okafor with data rather than promises."
 }}
 
-Include 3-5 key arguments from each side and 3-5 rebuttals. Be specific, cite moments from the transcript."""
+Include 4-6 key_arguments (mix of both sides) and 3-5 recommended_rebuttals. Be specific — reference actual statements from the transcript."""
 
     try:
         model = settings.analysis_model
-        print(f"[INFO] Fallback analysis using model: {model}")
+        print(f"[INFO] Direct analysis using model: {model}, transcript length: {len(transcript_capped)}")
         response = await client.messages.create(
             model=model,
-            max_tokens=3000,
+            max_tokens=4096,
             messages=[{"role": "user", "content": prompt}],
         )
 
         text = response.content[0].text
+        print(f"[INFO] Analysis response length: {len(text)} chars")
+
+        # Find JSON in response
         start = text.find("{")
         end = text.rfind("}") + 1
         if start == -1 or end == 0:
+            print(f"[ERROR] No JSON found in analysis response. First 200 chars: {text[:200]}")
             return None
 
-        data = json.loads(text[start:end])
+        json_text = text[start:end]
+        data = json.loads(json_text)
 
         key_arguments = [
             ArgumentSummary(**arg)
@@ -83,7 +94,7 @@ Include 3-5 key arguments from each side and 3-5 rebuttals. Be specific, cite mo
             if isinstance(reb, dict)
         ]
 
-        return AnalysisResult(
+        result = AnalysisResult(
             approval_score=float(data.get("approval_score", 50)),
             approval_label=data.get("approval_label", "Uncertain"),
             approval_reasoning=data.get("approval_reasoning", ""),
@@ -93,8 +104,15 @@ Include 3-5 key arguments from each side and 3-5 rebuttals. Be specific, cite mo
             weakest_opposition_point=data.get("weakest_opposition_point", ""),
             overall_assessment=data.get("overall_assessment", ""),
         )
+        print(f"[INFO] Analysis parsed successfully: score={result.approval_score}, args={len(key_arguments)}, rebuttals={len(rebuttals)}")
+        return result
+
+    except json.JSONDecodeError as e:
+        print(f"[ERROR] Analysis JSON parse failed: {e}")
+        print(f"[ERROR] Raw text (first 500): {text[:500] if 'text' in dir() else 'N/A'}")
+        return None
     except Exception as e:
-        print(f"[ERROR] Fallback analysis failed: {e}")
+        print(f"[ERROR] Analysis failed: {type(e).__name__}: {e}")
         return None
 
 
@@ -245,26 +263,30 @@ async def run_simulation(simulation_id: str):
         async def analysis_progress(msg: str):
             await agent_status(msg, "debate_analyst", "active")
 
-        # Attempt 1: Agent SDK analysis with Opus (no hard timeout — let it finish)
-        await analysis_progress("Evaluating argument quality from both sides...")
+        # Attempt 1: Direct Opus API (most reliable — simple API call, no Agent SDK overhead)
+        await analysis_progress("Scoring arguments and generating rebuttals...")
         try:
-            analysis_result = await orchestrator.analyze_debate(
-                transcript_text=transcript_text,
-                status_callback=lambda msg: analysis_progress(msg),
+            analysis_result = await _fallback_analysis(
+                client, transcript_text, state.input.proposal_details, settings,
             )
+            if analysis_result:
+                print("[INFO] Direct Opus analysis succeeded")
         except Exception as e:
-            print(f"[WARN] Agent SDK analysis failed: {e}")
+            print(f"[WARN] Direct Opus analysis failed: {type(e).__name__}: {e}")
 
-        # Attempt 2: Direct Opus API fallback (no hard timeout)
+        # Attempt 2: Agent SDK analysis (more complex but uses scoring tool)
         if not analysis_result:
-            print("[INFO] Trying direct Opus fallback analysis...")
-            await analysis_progress("Computing approval score and generating rebuttals...")
+            print("[INFO] Trying Agent SDK analysis...")
+            await analysis_progress("Running deep analysis with scoring model...")
             try:
-                analysis_result = await _fallback_analysis(
-                    client, transcript_text, state.input.proposal_details, settings,
+                analysis_result = await orchestrator.analyze_debate(
+                    transcript_text=transcript_text,
+                    status_callback=lambda msg: analysis_progress(msg),
                 )
+                if analysis_result:
+                    print("[INFO] Agent SDK analysis succeeded")
             except Exception as e:
-                print(f"[WARN] Opus fallback analysis failed: {e}")
+                print(f"[WARN] Agent SDK analysis failed: {type(e).__name__}: {e}")
 
         if analysis_result:
             await agent_status("Analysis complete — preparing results", "debate_analyst", "complete")
