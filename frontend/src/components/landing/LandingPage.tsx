@@ -95,7 +95,7 @@ export default function LandingPage() {
       {/* Background illustration */}
       <div className="fixed inset-0 pointer-events-none -z-20 overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.07]"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.18]"
           style={{ backgroundImage: 'url(/background.png)', backgroundPosition: 'center 60%' }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-chamber-bg via-chamber-bg/80 to-chamber-bg/40" />
@@ -124,7 +124,7 @@ export default function LandingPage() {
         />
 
         {/* Animated cityscape silhouette at bottom */}
-        <svg className="absolute bottom-0 left-0 w-full h-[200px] opacity-[0.04]" viewBox="0 0 1440 200">
+        <svg className="absolute bottom-0 left-0 w-full h-[200px] opacity-[0.12]" viewBox="0 0 1440 200">
           {/* City Hall */}
           <rect x="100" y="80" width="120" height="120" rx="2" fill="rgba(59,130,246,0.3)" />
           <rect x="130" y="60" width="60" height="20" rx="1" fill="rgba(59,130,246,0.3)" />
@@ -158,7 +158,7 @@ export default function LandingPage() {
         </svg>
 
         {/* Floating connection lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.03]">
+        <svg className="absolute inset-0 w-full h-full opacity-[0.08]">
           <motion.line
             x1="20%" y1="30%" x2="40%" y2="50%"
             stroke="rgba(59,130,246,0.5)" strokeWidth="1" strokeDasharray="4 4"
