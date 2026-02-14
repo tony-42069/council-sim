@@ -91,18 +91,18 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="relative max-w-7xl mx-auto overflow-hidden">
+    <div className="relative max-w-7xl mx-auto">
       {/* Background illustration */}
-      <div className="fixed inset-0 pointer-events-none -z-20 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.18]"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.15]"
           style={{ backgroundImage: 'url(/background.png)', backgroundPosition: 'center 60%' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-chamber-bg via-chamber-bg/80 to-chamber-bg/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-chamber-bg via-chamber-bg/70 to-chamber-bg/30" />
       </div>
 
       {/* Animated background effects */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Gradient orbs */}
         <motion.div
           className="absolute w-[500px] h-[500px] rounded-full bg-accent-blue/[0.05] blur-[100px]"
@@ -197,7 +197,7 @@ export default function LandingPage() {
       </div>
 
       {/* ===== HERO SECTION ===== */}
-      <div className="text-center pt-12 sm:pt-20 pb-8">
+      <div className="relative z-10 text-center pt-12 sm:pt-20 pb-8">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -268,7 +268,7 @@ export default function LandingPage() {
 
       {/* ===== UPLOAD SECTION ===== */}
       <motion.div
-        className="max-w-2xl mx-auto mb-16"
+        className="relative z-10 max-w-2xl mx-auto mb-16"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
@@ -372,7 +372,7 @@ export default function LandingPage() {
 
       {/* ===== FEATURES ===== */}
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pb-12"
+        className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pb-12"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7, duration: 0.6 }}
@@ -399,7 +399,7 @@ export default function LandingPage() {
 
       {/* ===== TECH FOOTER ===== */}
       <motion.div
-        className="text-center pb-8"
+        className="relative z-10 text-center pb-8"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
