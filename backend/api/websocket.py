@@ -263,30 +263,32 @@ async def run_simulation(simulation_id: str):
         async def analysis_progress(msg: str):
             await agent_status(msg, "debate_analyst", "active")
 
-        # Attempt 1: Direct Opus API (most reliable — simple API call, no Agent SDK overhead)
-        await analysis_progress("Scoring arguments and generating rebuttals...")
+        # Attempt 1: Agent SDK analysis with Opus (primary — showcases multi-agent system)
+        await analysis_progress("Agent is scoring arguments and computing approval likelihood...")
         try:
-            analysis_result = await _fallback_analysis(
-                client, transcript_text, state.input.proposal_details, settings,
+            analysis_result = await orchestrator.analyze_debate(
+                transcript_text=transcript_text,
+                status_callback=lambda msg: analysis_progress(msg),
             )
             if analysis_result:
-                print("[INFO] Direct Opus analysis succeeded")
+                print(f"[INFO] Agent SDK analysis succeeded: score={analysis_result.approval_score}")
+            else:
+                print("[WARN] Agent SDK analysis returned None")
         except Exception as e:
-            print(f"[WARN] Direct Opus analysis failed: {type(e).__name__}: {e}")
+            print(f"[WARN] Agent SDK analysis failed: {type(e).__name__}: {e}")
 
-        # Attempt 2: Agent SDK analysis (more complex but uses scoring tool)
+        # Attempt 2: Direct Opus API fallback (safety net only)
         if not analysis_result:
-            print("[INFO] Trying Agent SDK analysis...")
-            await analysis_progress("Running deep analysis with scoring model...")
+            print("[INFO] Falling back to direct Opus API...")
+            await analysis_progress("Finalizing analysis...")
             try:
-                analysis_result = await orchestrator.analyze_debate(
-                    transcript_text=transcript_text,
-                    status_callback=lambda msg: analysis_progress(msg),
+                analysis_result = await _fallback_analysis(
+                    client, transcript_text, state.input.proposal_details, settings,
                 )
                 if analysis_result:
-                    print("[INFO] Agent SDK analysis succeeded")
+                    print(f"[INFO] Direct Opus fallback succeeded: score={analysis_result.approval_score}")
             except Exception as e:
-                print(f"[WARN] Agent SDK analysis failed: {type(e).__name__}: {e}")
+                print(f"[WARN] Direct Opus fallback failed: {type(e).__name__}: {e}")
 
         if analysis_result:
             await agent_status("Analysis complete — preparing results", "debate_analyst", "complete")

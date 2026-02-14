@@ -73,19 +73,21 @@ async def analyze_debate_with_sdk(
     No hard timeout — let the agent finish its work.
     """
     prompt = DEBATE_ANALYSIS_PROMPT.format(
-        transcript_text=transcript_text[:12000],  # Cap for context window
-        proposal_summary=proposal_summary,
+        transcript_text=transcript_text[:10000],  # Cap to avoid context overflow
+        proposal_summary=proposal_summary[:2000],
     )
 
     try:
         result_text = ""
+        message_count = 0
 
+        print("[INFO] Starting Agent SDK analysis...")
         async for message in query(
             prompt=prompt,
             options=ClaudeAgentOptions(
-                model="claude-opus-4-6",  # Opus for deep analysis
-                max_turns=10,
-                max_budget_usd=2.00,
+                model="claude-opus-4-6",
+                max_turns=15,
+                max_budget_usd=3.00,
                 permission_mode="bypassPermissions",
                 mcp_servers=mcp_server_config,
                 allowed_tools=[
@@ -93,15 +95,22 @@ async def analyze_debate_with_sdk(
                 ],
             ),
         ):
+            message_count += 1
             if isinstance(message, (AssistantMessage, ResultMessage)):
                 for block in message.content:
                     if isinstance(block, TextBlock):
                         result_text += block.text
 
+        print(f"[INFO] Agent SDK finished: {message_count} messages, {len(result_text)} chars of text")
+
+        if not result_text.strip():
+            print("[WARN] Agent SDK returned empty text")
+            return None
+
         return _parse_analysis_response(result_text)
 
     except Exception as e:
-        print(f"[WARN] Debate analysis failed: {e}")
+        print(f"[WARN] Agent SDK analysis failed: {type(e).__name__}: {e}")
         return None
 
 
@@ -111,6 +120,7 @@ def _parse_analysis_response(text: str) -> Optional[AnalysisResult]:
         start = text.find("{")
         end = text.rfind("}") + 1
         if start == -1 or end == 0:
+            print(f"[WARN] No JSON object found in analysis text ({len(text)} chars). First 300: {text[:300]}")
             return None
 
         json_str = text[start:end]
