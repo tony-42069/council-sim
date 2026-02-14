@@ -150,6 +150,10 @@ def _parse_analysis_response(text: str) -> Optional[AnalysisResult]:
             overall_assessment=data.get("overall_assessment", ""),
         )
 
-    except (json.JSONDecodeError, TypeError, KeyError) as e:
+    except json.JSONDecodeError as e:
         print(f"[WARN] Failed to parse analysis JSON: {e}")
+        print(f"[WARN] JSON text attempted ({len(json_str)} chars): {json_str[:500]}")
+        return None
+    except (TypeError, KeyError) as e:
+        print(f"[WARN] Failed to build AnalysisResult: {type(e).__name__}: {e}")
         return None

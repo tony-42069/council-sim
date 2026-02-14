@@ -263,8 +263,11 @@ async def run_simulation(simulation_id: str):
         async def analysis_progress(msg: str):
             await agent_status(msg, "debate_analyst", "active")
 
+        transcript_len = len(transcript_text)
+        await analysis_progress(f"Analyzing {transcript_len} chars of transcript...")
+
         # Attempt 1: Agent SDK analysis with Opus (primary — showcases multi-agent system)
-        await analysis_progress("Agent is scoring arguments and computing approval likelihood...")
+        await analysis_progress("Agent SDK: scoring arguments and computing approval...")
         try:
             analysis_result = await orchestrator.analyze_debate(
                 transcript_text=transcript_text,
@@ -272,23 +275,33 @@ async def run_simulation(simulation_id: str):
             )
             if analysis_result:
                 print(f"[INFO] Agent SDK analysis succeeded: score={analysis_result.approval_score}")
+                await analysis_progress(f"Agent SDK succeeded — score: {analysis_result.approval_score}")
             else:
                 print("[WARN] Agent SDK analysis returned None")
+                await analysis_progress("Agent SDK returned no result — trying direct API...")
         except Exception as e:
-            print(f"[WARN] Agent SDK analysis failed: {type(e).__name__}: {e}")
+            err_msg = f"{type(e).__name__}: {str(e)[:200]}"
+            print(f"[WARN] Agent SDK analysis failed: {err_msg}")
+            await analysis_progress(f"Agent SDK error: {err_msg[:100]} — trying direct API...")
 
         # Attempt 2: Direct Opus API fallback (safety net only)
         if not analysis_result:
             print("[INFO] Falling back to direct Opus API...")
-            await analysis_progress("Finalizing analysis...")
+            await analysis_progress("Direct Opus API: generating analysis...")
             try:
                 analysis_result = await _fallback_analysis(
                     client, transcript_text, state.input.proposal_details, settings,
                 )
                 if analysis_result:
                     print(f"[INFO] Direct Opus fallback succeeded: score={analysis_result.approval_score}")
+                    await analysis_progress(f"Direct API succeeded — score: {analysis_result.approval_score}")
+                else:
+                    print("[WARN] Direct Opus fallback returned None")
+                    await analysis_progress("Direct API also returned no result")
             except Exception as e:
-                print(f"[WARN] Direct Opus fallback failed: {type(e).__name__}: {e}")
+                err_msg = f"{type(e).__name__}: {str(e)[:200]}"
+                print(f"[WARN] Direct Opus fallback failed: {err_msg}")
+                await analysis_progress(f"Direct API error: {err_msg[:100]}")
 
         if analysis_result:
             await agent_status("Analysis complete — preparing results", "debate_analyst", "complete")
@@ -296,7 +309,7 @@ async def run_simulation(simulation_id: str):
             await manager.set_analysis(simulation_id, analysis_dict)
             await stream.send_analysis(simulation_id, analysis_dict)
         else:
-            await agent_status("Analysis could not be completed", "debate_analyst", "complete")
+            await agent_status("Both analysis methods failed — see status messages for details", "debate_analyst", "complete")
             print("[WARN] All analysis methods failed — no results to show")
 
         # --- Complete ---
@@ -304,9 +317,12 @@ async def run_simulation(simulation_id: str):
         await stream.send_complete(simulation_id)
 
     except Exception as e:
-        print(f"[ERROR] Simulation {simulation_id} failed: {e}")
+        import traceback
+        tb = traceback.format_exc()
+        print(f"[ERROR] Simulation {simulation_id} failed: {type(e).__name__}: {e}")
+        print(f"[ERROR] Traceback:\n{tb}")
         await manager.set_error(simulation_id, str(e))
-        await stream.send_error(simulation_id, f"Simulation failed: {str(e)}")
+        await stream.send_error(simulation_id, f"Simulation failed: {type(e).__name__}: {str(e)[:300]}")
 
 
 @router.websocket("/ws/simulation/{simulation_id}")
