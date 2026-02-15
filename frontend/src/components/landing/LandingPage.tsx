@@ -193,7 +193,7 @@ export default function LandingPage() {
         transition={{ duration: 0.6, delay: 0.5 }}
       >
         {/* Full-width construction site illustration */}
-        <div className="relative rounded-2xl overflow-hidden border border-chamber-border/20 mb-[-120px]">
+        <div className="relative rounded-2xl overflow-hidden border border-chamber-border/20">
           <img
             src="/background.png"
             alt="Data center construction in a community"
@@ -202,7 +202,7 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-chamber-bg/70 via-transparent to-chamber-bg/20 pointer-events-none" />
         </div>
 
-        <div className="relative max-w-2xl mx-auto">
+        <div className="relative max-w-2xl mx-auto -mt-[45%]">
         <div
           className={`relative rounded-2xl border-2 border-dashed p-10 sm:p-14 text-center transition-all duration-300 cursor-pointer group backdrop-blur-md ${
             isExtracting
