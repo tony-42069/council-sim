@@ -192,7 +192,7 @@ export default function LandingPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
       >
-        {/* Full-width construction site illustration */}
+        {/* Full-width construction site illustration with card centered on top */}
         <div className="relative rounded-2xl overflow-hidden border border-chamber-border/20">
           <img
             src="/background.png"
@@ -200,9 +200,10 @@ export default function LandingPage() {
             className="w-full h-auto"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-chamber-bg/70 via-transparent to-chamber-bg/20 pointer-events-none" />
-        </div>
 
-        <div className="relative max-w-2xl mx-auto -mt-[45%]">
+          {/* Upload card centered over the illustration */}
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <div className="max-w-2xl w-full">
         <div
           className={`relative rounded-2xl border-2 border-dashed p-10 sm:p-14 text-center transition-all duration-300 cursor-pointer group backdrop-blur-md ${
             isExtracting
@@ -287,7 +288,11 @@ export default function LandingPage() {
           )}
         </div>
 
-        {/* Manual option */}
+            </div>
+          </div>
+        </div>
+
+        {/* Manual option — below the illustration */}
         <div className="flex items-center justify-center gap-3 mt-6">
           <div className="h-px w-16 bg-chamber-border/40" />
           <button
@@ -297,7 +302,6 @@ export default function LandingPage() {
             or configure manually
           </button>
           <div className="h-px w-16 bg-chamber-border/40" />
-        </div>
         </div>
       </motion.div>
 
