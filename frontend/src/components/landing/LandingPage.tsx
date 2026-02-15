@@ -185,20 +185,30 @@ export default function LandingPage() {
         </motion.div>
       </div>
 
-      {/* ===== UPLOAD SECTION ===== */}
+      {/* ===== UPLOAD SECTION with background illustration ===== */}
       <motion.div
         className="relative z-10 max-w-2xl mx-auto mb-16"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.5 }}
       >
+        {/* Construction site illustration behind the card */}
+        <div className="absolute inset-0 -inset-x-8 -inset-y-4 rounded-3xl overflow-hidden pointer-events-none">
+          <img
+            src="/background.png"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-chamber-bg/40 via-transparent to-chamber-bg/60" />
+        </div>
+
         <div
-          className={`relative rounded-2xl border-2 border-dashed p-10 sm:p-14 text-center transition-all duration-300 cursor-pointer group ${
+          className={`relative rounded-2xl border-2 border-dashed p-10 sm:p-14 text-center transition-all duration-300 cursor-pointer group backdrop-blur-sm ${
             isExtracting
-              ? 'border-accent-blue/40 bg-accent-blue/5 shadow-lg shadow-accent-blue/10'
+              ? 'border-accent-blue/40 bg-chamber-bg/50 shadow-lg shadow-accent-blue/10'
               : dragOver
-                ? 'border-accent-blue/50 bg-accent-blue/5 scale-[1.01] shadow-lg shadow-accent-blue/10'
-                : 'border-chamber-border/60 hover:border-accent-blue/30 hover:bg-accent-blue/[0.02] hover:shadow-lg hover:shadow-accent-blue/5'
+                ? 'border-accent-blue/50 bg-chamber-bg/50 scale-[1.01] shadow-lg shadow-accent-blue/10'
+                : 'border-chamber-border/60 bg-chamber-bg/50 hover:border-accent-blue/30 hover:bg-chamber-bg/60 hover:shadow-lg hover:shadow-accent-blue/5'
           }`}
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -314,21 +324,6 @@ export default function LandingPage() {
             <p className="text-[11px] text-chamber-muted/70 leading-relaxed">{f.desc}</p>
           </motion.div>
         ))}
-      </motion.div>
-
-      {/* ===== ILLUSTRATION ===== */}
-      <motion.div
-        className="relative z-10 mb-10 rounded-2xl overflow-hidden border border-chamber-border/20"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0, duration: 0.6 }}
-      >
-        <img
-          src="/background.png"
-          alt="Data center construction in a community"
-          className="w-full h-auto"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-chamber-bg/80 via-transparent to-chamber-bg/30 pointer-events-none" />
       </motion.div>
 
       {/* ===== TECH FOOTER ===== */}
