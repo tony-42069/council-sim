@@ -101,13 +101,24 @@ export default function CouncilChamber() {
 
   return (
     <motion.div
-      className="h-[calc(100vh-80px)] flex flex-col lg:flex-row gap-4"
+      className="h-[calc(100vh-80px)] flex flex-col lg:flex-row gap-4 relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Background illustration */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: 'url(/background.png)',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.06,
+        }}
+      />
+      <div className="absolute inset-0 pointer-events-none z-0 bg-gradient-to-b from-chamber-bg/60 via-transparent to-chamber-bg/80" />
       {/* ===== LEFT: Chamber + Controls ===== */}
-      <div className="flex flex-col flex-1 min-w-0 min-h-0">
+      <div className="flex flex-col flex-1 min-w-0 min-h-0 relative z-10">
         {/* Top bar: Live badge + Timer */}
         <div className="flex items-center justify-between mb-3 shrink-0">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-red/10 border border-accent-red/20 text-xs font-medium text-accent-red">
@@ -147,7 +158,7 @@ export default function CouncilChamber() {
       </div>
 
       {/* ===== RIGHT SIDEBAR: Transcript ===== */}
-      <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 min-h-0 flex flex-col">
+      <div className="w-full lg:w-[380px] xl:w-[420px] shrink-0 min-h-0 flex flex-col relative z-10">
         <TranscriptFeed
           messages={state.messages}
           personas={state.personas}

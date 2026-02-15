@@ -147,10 +147,9 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
         >
-          Prepare for NIMBY opposition before it happens. Upload your data center proposal
-          and watch 5 AI agents — residents, a council member, and a moderator — debate it live.
-          Get an approval score, identify the strongest opposition arguments, and walk into your
-          real council meeting with battle-tested rebuttals.
+          Prepare for NIMBY opposition before it happens. Upload your proposal
+          and watch 5 AI agents debate it live. Get an approval score and walk into your
+          council meeting with battle-tested rebuttals.
         </motion.p>
 
         {/* Steps row */}
@@ -313,6 +312,21 @@ export default function LandingPage() {
             <p className="text-[11px] text-chamber-muted/70 leading-relaxed">{f.desc}</p>
           </motion.div>
         ))}
+      </motion.div>
+
+      {/* ===== ILLUSTRATION ===== */}
+      <motion.div
+        className="relative z-10 mb-10 rounded-2xl overflow-hidden border border-chamber-border/20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.0, duration: 0.6 }}
+      >
+        <img
+          src="/background.png"
+          alt="Data center construction in a community"
+          className="w-full h-auto"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-chamber-bg/80 via-transparent to-chamber-bg/30 pointer-events-none" />
       </motion.div>
 
       {/* ===== TECH FOOTER ===== */}
