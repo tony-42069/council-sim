@@ -160,21 +160,21 @@ export default function LandingPage() {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           {STEPS.map((s, i) => (
-            <div key={s.num} className="flex items-center gap-3 sm:gap-5">
-              <div className="flex items-center gap-3">
+            <div key={s.num} className="flex items-center gap-4 sm:gap-6">
+              <div className="flex items-center gap-4">
                 <span
-                  className="text-xs font-bold px-2.5 py-1 rounded-lg"
+                  className="text-sm font-bold px-3.5 py-1.5 rounded-lg"
                   style={{ backgroundColor: `${s.color}15`, color: s.color }}
                 >
                   {s.num}
                 </span>
                 <div className="text-left">
-                  <span className="text-sm font-semibold text-chamber-text block leading-tight">{s.label}</span>
-                  <span className="text-xs text-chamber-muted/60 hidden sm:block">{s.desc}</span>
+                  <span className="text-base font-semibold text-chamber-text block leading-tight">{s.label}</span>
+                  <span className="text-sm text-chamber-muted/60 hidden sm:block">{s.desc}</span>
                 </div>
               </div>
               {i < STEPS.length - 1 && (
-                <svg width="20" height="20" viewBox="0 0 16 16" fill="none" className="text-chamber-border/60 shrink-0">
+                <svg width="24" height="24" viewBox="0 0 16 16" fill="none" className="text-chamber-border/60 shrink-0">
                   <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" />
                 </svg>
               )}

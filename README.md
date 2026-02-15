@@ -1,9 +1,5 @@
 <div align="center">
 
-# CouncilSim
-
-**AI-powered city council debate simulator for data center proposals**
-
 [![Built with Claude Opus 4.6](https://img.shields.io/badge/Built%20with-Claude%20Opus%204.6-6366f1?style=for-the-badge&logo=anthropic&logoColor=white)](https://anthropic.com)
 [![Claude Agent SDK](https://img.shields.io/badge/Claude-Agent%20SDK-818cf8?style=for-the-badge&logo=anthropic&logoColor=white)](https://docs.anthropic.com)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
@@ -12,9 +8,13 @@
 [![Deployed on Railway](https://img.shields.io/badge/Backend-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)](https://railway.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 
+# CouncilSim
+
+**AI-powered city council debate simulator for data center proposals**
+
 *Problem Statement 3: Amplify Human Judgment*
 
-Built for the [Built with Opus 4.6: Claude Code Hackathon](https://cerebralvalley.ai/) (Feb 10–16, 2026)
+Built for the [Built with Opus 4.6: Claude Code Hackathon](https://cerebralvalley.ai/e/claude-code-hackathon) (Feb 10–16, 2026)
 
 <br />
 
@@ -211,7 +211,7 @@ The frontend runs at `http://localhost:5173`.
 
 **Why Opus 4.6**: The multi-agent debate requires nuanced persona management (each agent has conflicting goals), deep contextual reasoning (building on previous arguments), and strategic analysis (post-debate recommendations). Opus 4.6 powers the persona generation, community research, debate turns, and analysis — the entire intelligence layer.
 
-**Real-world impact**: Data centers are critical infrastructure for AI. Anthropic itself [committed to covering 100% of consumer electricity price increases](https://www.anthropic.com/news/anthropic-commitment-data-centers) from data centers (Feb 2026). CouncilSim directly helps get that infrastructure built by preparing petitioners for the toughest questions.
+**Real-world impact**: Data centers are critical infrastructure for AI. Anthropic itself [committed to covering 100% of consumer electricity price increases](https://www.anthropic.com/news/covering-electricity-price-increases) from data centers (Feb 2026). CouncilSim directly helps get that infrastructure built by preparing petitioners for the toughest questions.
 
 ---
 
