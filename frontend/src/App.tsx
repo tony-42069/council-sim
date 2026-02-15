@@ -61,7 +61,7 @@ function AppContent() {
 
       {/* Floating illustrations — landing page only, full viewport width */}
       {!isSimulation && (
-        <div className="fixed inset-0 pointer-events-none z-[5] overflow-hidden">
+        <div className="fixed inset-0 pointer-events-none z-20 overflow-hidden">
           {FLOATING_ILLUSTRATIONS.map((img) => (
             <motion.img
               key={img.src}
