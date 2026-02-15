@@ -42,8 +42,8 @@ function AppContent() {
               </div>
             </div>
             <div className="flex flex-col">
-              <h1 className="text-lg font-bold text-chamber-text leading-tight font-display">
-                City Council Simulator
+              <h1 className="text-lg font-bold leading-tight font-display">
+                <span className="text-gradient">Council</span><span className="text-gradient-warm">Sim</span>
               </h1>
             </div>
           </a>

@@ -136,9 +136,7 @@ export default function LandingPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
         >
-          <span className="text-gradient">City Council</span>
-          <br />
-          <span className="text-gradient-warm">Simulator</span>
+          <span className="text-gradient">Council</span><span className="text-gradient-warm">Sim</span>
         </motion.h1>
 
         {/* Subheadline */}

@@ -159,9 +159,8 @@ export default function SetupForm() {
         </div>
         <h2 className="text-5xl sm:text-6xl font-normal mb-4 leading-tight font-display">
           Simulate Your{' '}
-          <span className="text-gradient">City Council</span>
-          <br />
-          <span className="text-gradient-warm">Debate</span>
+          <span className="text-gradient">Council</span>
+          <span className="text-gradient-warm"> Debate</span>
         </h2>
         <p className="text-chamber-muted text-lg max-w-2xl mx-auto leading-relaxed">
           Upload a proposal PDF and our AI agents handle the rest — or fill in the details manually.
