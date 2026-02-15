@@ -143,14 +143,15 @@ export default function LandingPage() {
 
         {/* Subheadline */}
         <motion.p
-          className="text-lg sm:text-xl text-chamber-muted max-w-2xl mx-auto leading-relaxed mb-6"
+          className="text-sm sm:text-base text-chamber-muted max-w-2xl mx-auto leading-relaxed mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
         >
-          Prepare for NIMBY opposition before it happens. Upload your proposal
-          and watch 5 AI agents debate it live. Get an approval score and walk into your
-          council meeting with battle-tested rebuttals.
+          Upload your data center proposal and watch 5 AI agents — residents, a council member,
+          and a moderator — debate it live. Get an approval score, identify opposition arguments,
+          and walk into your council meeting with battle-tested rebuttals. Helping petitioners
+          prepare so city council officials can make more informed decisions — go from rejected to approved with confidence.
         </motion.p>
 
         {/* Steps row */}
