@@ -114,6 +114,64 @@ export default function LandingPage() {
         />
       </div>
 
+      {/* ===== FLOATING ILLUSTRATIONS ===== */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Top-left: City Hall */}
+        <motion.img
+          src="/city-hall.png"
+          alt=""
+          className="absolute w-[180px] opacity-50 drop-shadow-[0_0_20px_rgba(99,102,241,0.15)]"
+          style={{ top: '2%', left: '-2%' }}
+          animate={{ y: [0, -12, 0], rotate: [0, 1, 0] }}
+          transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
+        />
+        {/* Top-right: Data Center */}
+        <motion.img
+          src="/data-center.png"
+          alt=""
+          className="absolute w-[200px] opacity-50 drop-shadow-[0_0_20px_rgba(99,102,241,0.12)]"
+          style={{ top: '5%', right: '-3%' }}
+          animate={{ y: [0, 10, 0], rotate: [0, -1.5, 0] }}
+          transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut' }}
+        />
+        {/* Mid-left: Houses neighborhood */}
+        <motion.img
+          src="/houses-1.png"
+          alt=""
+          className="absolute w-[220px] opacity-50 drop-shadow-[0_0_18px_rgba(99,102,241,0.12)]"
+          style={{ top: '35%', left: '-4%' }}
+          animate={{ y: [0, -8, 0], rotate: [0, 0.8, 0] }}
+          transition={{ repeat: Infinity, duration: 12, ease: 'easeInOut' }}
+        />
+        {/* Mid-right: Playground */}
+        <motion.img
+          src="/playscape.png"
+          alt=""
+          className="absolute w-[180px] opacity-50 drop-shadow-[0_0_18px_rgba(99,102,241,0.12)]"
+          style={{ top: '38%', right: '-2%' }}
+          animate={{ y: [0, 8, 0], rotate: [0, -0.8, 0] }}
+          transition={{ repeat: Infinity, duration: 9, ease: 'easeInOut' }}
+        />
+        {/* Bottom-left: House with pool */}
+        <motion.img
+          src="/house-2.png"
+          alt=""
+          className="absolute w-[190px] opacity-50 drop-shadow-[0_0_18px_rgba(99,102,241,0.12)]"
+          style={{ bottom: '15%', left: '-3%' }}
+          animate={{ y: [0, -10, 0], rotate: [0, 1.2, 0] }}
+          transition={{ repeat: Infinity, duration: 11, ease: 'easeInOut' }}
+        />
+        {/* Bottom-right: Community people */}
+        <motion.img
+          src="/people.png"
+          alt=""
+          className="absolute w-[200px] opacity-50 drop-shadow-[0_0_20px_rgba(99,102,241,0.15)]"
+          style={{ bottom: '12%', right: '-2%' }}
+          animate={{ y: [0, 7, 0], rotate: [0, -1, 0] }}
+          transition={{ repeat: Infinity, duration: 7, ease: 'easeInOut' }}
+        />
+      </div>
+
       {/* ===== HERO SECTION ===== */}
       <div className="relative z-10 text-center pt-12 sm:pt-20 pb-8">
         {/* Badge */}
