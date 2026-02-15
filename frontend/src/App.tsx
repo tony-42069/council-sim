@@ -45,9 +45,6 @@ function AppContent() {
               <h1 className="text-lg font-bold text-chamber-text leading-tight font-display">
                 City Council Simulator
               </h1>
-              <span className="text-[10px] font-medium text-accent-blue/80 uppercase tracking-widest leading-tight hidden sm:block">
-                AI-Powered NIMBY Debate Engine
-              </span>
             </div>
           </a>
           {!isSimulation && (
