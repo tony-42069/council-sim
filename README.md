@@ -1,6 +1,7 @@
 <div align="center">
 
-[![Built with Claude Opus 4.6](https://img.shields.io/badge/Built%20with-Claude%20Opus%204.6-6366f1?style=for-the-badge&logo=anthropic&logoColor=white)](https://anthropic.com)
+[![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-f97316?style=for-the-badge&logo=anthropic&logoColor=white)](https://claude.ai/claude-code)
+[![Claude Opus 4.6](https://img.shields.io/badge/Model-Claude%20Opus%204.6-6366f1?style=for-the-badge&logo=anthropic&logoColor=white)](https://anthropic.com)
 [![Claude Agent SDK](https://img.shields.io/badge/Claude-Agent%20SDK-818cf8?style=for-the-badge&logo=anthropic&logoColor=white)](https://docs.anthropic.com)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
@@ -209,6 +210,8 @@ The frontend runs at `http://localhost:5173`.
 
 **Problem Statement 3: Amplify Human Judgment** — CouncilSim helps petitioners prepare for city council meetings without replacing human decision-making. It surfaces the arguments they'll face, tests their responses, and provides data-backed rebuttals — dramatically sharpening preparation while keeping humans in the loop.
 
+**Built with Claude Code**: The entire codebase — backend, frontend, agent orchestration, MCP tools, and even the demo video (built with Remotion) — was written by Claude Opus 4.6 in Claude Code. From architecture decisions to pixel-level UI polish, Claude Code was the sole development environment.
+
 **Why Opus 4.6**: The multi-agent debate requires nuanced persona management (each agent has conflicting goals), deep contextual reasoning (building on previous arguments), and strategic analysis (post-debate recommendations). Opus 4.6 powers the persona generation, community research, debate turns, and analysis — the entire intelligence layer.
 
 **Real-world impact**: Data centers are critical infrastructure for AI. Anthropic itself [committed to covering 100% of consumer electricity price increases](https://www.anthropic.com/news/covering-electricity-price-increases) from data centers (Feb 2026). CouncilSim directly helps get that infrastructure built by preparing petitioners for the toughest questions.
@@ -223,7 +226,7 @@ MIT License
 
 <div align="center">
 
-**Built with Claude Opus 4.6 and the Claude Agent SDK**
+**Built entirely with [Claude Code](https://claude.ai/claude-code)** — every line of backend, frontend, and video production code was written by Claude Opus 4.6 in Claude Code.
 
 *Go from rejected to approved — with confidence.*
 
