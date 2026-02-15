@@ -106,17 +106,7 @@ export default function CouncilChamber() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Background illustration */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0"
-        style={{
-          backgroundImage: 'url(/background.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.06,
-        }}
-      />
-      <div className="absolute inset-0 pointer-events-none z-0 bg-gradient-to-b from-chamber-bg/60 via-transparent to-chamber-bg/80" />
+      {/* Background is now rendered at App level for full viewport width */}
       {/* ===== LEFT: Chamber + Controls ===== */}
       <div className="flex flex-col flex-1 min-w-0 min-h-0 relative z-10">
         {/* Top bar: Live badge + Timer */}

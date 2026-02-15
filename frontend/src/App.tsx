@@ -1,8 +1,23 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import LandingPage from './components/landing/LandingPage';
 import SetupForm from './components/setup/SetupForm';
 import CouncilChamber from './components/chamber/CouncilChamber';
 import './index.css';
+
+const FLOATING_ILLUSTRATIONS: Array<{
+  src: string; w: number; top: string; left?: string; right?: string;
+  dur: number; yRange: number[]; rot: number[];
+}> = [
+  // LEFT SIDE (3 images, top to bottom)
+  { src: '/city-hall.png', w: 180, top: '8%', left: '1%', dur: 8, yRange: [-12, 0, 12, 0], rot: [0, 1, 0] },
+  { src: '/houses-1.png', w: 200, top: '40%', left: '0%', dur: 12, yRange: [0, -10, 0, 10], rot: [0, 0.8, 0] },
+  { src: '/house-2.png', w: 180, top: '72%', left: '1%', dur: 11, yRange: [0, -8, 0, 8], rot: [0, 1.2, 0] },
+  // RIGHT SIDE (3 images, top to bottom)
+  { src: '/data-center.png', w: 200, top: '10%', right: '1%', dur: 10, yRange: [0, 10, 0, -10], rot: [0, -1.5, 0] },
+  { src: '/playscape.png', w: 170, top: '42%', right: '0%', dur: 9, yRange: [0, 8, 0, -8], rot: [0, -0.8, 0] },
+  { src: '/people.png', w: 190, top: '74%', right: '1%', dur: 7, yRange: [0, 7, 0, -7], rot: [0, -1, 0] },
+];
 
 function AppContent() {
   const location = useLocation();
@@ -43,6 +58,41 @@ function AppContent() {
           )}
         </div>
       </header>
+
+      {/* Floating illustrations — landing page only, full viewport width */}
+      {!isSimulation && (
+        <div className="fixed inset-0 pointer-events-none z-[5] overflow-hidden">
+          {FLOATING_ILLUSTRATIONS.map((img) => (
+            <motion.img
+              key={img.src}
+              src={img.src}
+              alt=""
+              className="absolute opacity-50 drop-shadow-[0_0_25px_rgba(99,102,241,0.2)] hidden lg:block"
+              style={{
+                width: img.w,
+                top: img.top,
+                ...(img.left !== undefined ? { left: img.left } : {}),
+                ...(img.right !== undefined ? { right: img.right } : {}),
+              }}
+              animate={{ y: img.yRange, rotate: img.rot }}
+              transition={{ repeat: Infinity, duration: img.dur, ease: 'easeInOut' }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Simulation background — full viewport width */}
+      {isSimulation && (
+        <div
+          className="fixed inset-0 pointer-events-none z-0"
+          style={{
+            backgroundImage: 'url(/background.png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: 0.08,
+          }}
+        />
+      )}
 
       {/* Main Content */}
       <main className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
