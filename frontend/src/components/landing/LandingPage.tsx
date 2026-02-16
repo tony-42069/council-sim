@@ -290,16 +290,26 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Manual option — below the illustration */}
+        {/* Options below the illustration */}
         <div className="flex items-center justify-center gap-3 mt-6">
-          <div className="h-px w-16 bg-chamber-border/40" />
+          <div className="h-px w-12 bg-chamber-border/40" />
+          <a
+            href="https://cms9files.revize.com/vanburentwp/Document_Center/Agendas%20&%20Minutes/Planning%20Commission/2024/Packets/P%20C%20Packet%202%2011%2026%20.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-xs text-accent-blue/70 hover:text-accent-blue font-medium transition-colors"
+          >
+            download sample proposal
+          </a>
+          <span className="text-chamber-muted/30 text-xs">|</span>
           <button
             onClick={(e) => { e.stopPropagation(); navigate('/setup'); }}
             className="text-xs text-chamber-muted/60 hover:text-accent-blue font-medium transition-colors"
           >
             or configure manually
           </button>
-          <div className="h-px w-16 bg-chamber-border/40" />
+          <div className="h-px w-12 bg-chamber-border/40" />
         </div>
       </motion.div>
 
