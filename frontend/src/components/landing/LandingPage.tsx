@@ -273,7 +273,7 @@ export default function LandingPage() {
                   Drop your proposal PDF here
                 </p>
                 <p className="text-sm text-chamber-muted mt-1.5">
-                  or <span className="text-accent-blue font-medium group-hover:underline">click to browse</span> — AI reads it and launches the simulation
+                  or <span className="text-accent-blue font-medium group-hover:underline">click to browse</span> or <a href="https://cms9files.revize.com/vanburentwp/Document_Center/Agendas%20&%20Minutes/Planning%20Commission/2024/Packets/P%20C%20Packet%202%2011%2026%20.pdf" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-accent-amber font-medium hover:underline">download sample</a> — AI reads it and launches the simulation
                 </p>
               </div>
               <div className="flex items-center gap-2 text-[11px] text-chamber-muted/40">
