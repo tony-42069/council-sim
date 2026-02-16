@@ -38,7 +38,7 @@ CouncilSim creates a realistic multi-agent debate simulation where:
 - **An AI council moderator** asks the tough questions
 - **Post-debate analysis** scores your approval likelihood and gives you battle-tested rebuttals
 
-Upload a real proposal PDF — the kind found on any city council meeting agenda — and watch five AI personas debate it live. Walk into your next council meeting knowing every concern before it's raised.
+Upload a real proposal PDF — the kind found on any city council meeting agenda — and watch five AI personas debate it live. Walk into your next council meeting knowing every concern before it's raised. (We built and tested CouncilSim using [this Van Buren Township, MI planning commission packet](https://cms9files.revize.com/vanburentwp/Document_Center/Agendas%20&%20Minutes/Planning%20Commission/2024/Packets/P%20C%20Packet%202%2011%2026%20.pdf) — download it and try it yourself!)
 
 **Go from rejected to approved — with confidence.**
 
